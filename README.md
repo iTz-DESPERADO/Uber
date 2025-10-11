@@ -149,7 +149,6 @@ Uber/
         └── ApplicationDbContext.cs     # EF Core context
 ```
 
-
 ## 🙏 Acknowledgments
 
 - Built with ASP.NET Core MVC
