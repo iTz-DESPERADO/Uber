@@ -6,10 +6,10 @@ A complete ride-hailing application built with ASP.NET Core MVC, featuring real-
 
 ## 🎥 Demo Video
 
-<video src="./assets/demo.mp4" controls width="700"></video>
+
+https://github.com/user-attachments/assets/20323e2c-d635-4c9c-ae95-b6c9e4139aad
 
 
----
 
 ## 🌟 Features
 
