@@ -61,10 +61,10 @@ solution mirrors these groups as solution folders. Run build and test commands
 from the root; run the web app using `src/Uber.Ui/Uber.Ui.csproj`.
 
 Step 02 added the [Result Pattern contracts](result-pattern.md) and isolated
-domain tests (commit `4cc9eb5`). Step 03 adds the [CQRS contracts, custom mediator
-and pipeline behaviors](cqrs.md). Existing application behavior remains on the legacy
-path until individual features migrate. Characterization tests for the first
-feature are the next separate review phase.
+domain tests (commit `4cc9eb5`). Step 03 added the [CQRS contracts, custom mediator
+and pipeline behaviors](cqrs.md), committed as `879617e`. Step 04 establishes the
+[ride transition behavior baseline](ride-behavior-baseline.md). Existing
+application behavior remains on the legacy path until individual features migrate.
 
 | Phase / branch suffix | Deliverable |
 | --- | --- |

@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1534BDFD-875
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{901D0D33-A86F-4AF8-9C08-44925CFD09AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Behavior.Tests", "tests\Uber.Behavior.Tests\Uber.Behavior.Tests.csproj", "{24C690D2-899D-4546-A361-46BA9081229E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24C690D2-899D-4546-A361-46BA9081229E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24C690D2-899D-4546-A361-46BA9081229E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24C690D2-899D-4546-A361-46BA9081229E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24C690D2-899D-4546-A361-46BA9081229E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +80,7 @@ Global
 		{DA32E268-9231-4A0D-9015-11812080D5FC} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
 		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620} = {901D0D33-A86F-4AF8-9C08-44925CFD09AF}
 		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7} = {901D0D33-A86F-4AF8-9C08-44925CFD09AF}
+		{24C690D2-899D-4546-A361-46BA9081229E} = {901D0D33-A86F-4AF8-9C08-44925CFD09AF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F9B0B3ED-6B07-4CE2-AE77-821596B2F3FF}

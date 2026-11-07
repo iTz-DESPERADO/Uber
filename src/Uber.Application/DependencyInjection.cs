@@ -51,6 +51,7 @@ public static class DependencyInjection
         }
 
         services.TryAddScoped<IMediator, Mediator>();
+
         foreach (var (contract, implementation) in registrations)
         {
             services.TryAddScoped(contract, implementation);

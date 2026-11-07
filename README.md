@@ -137,7 +137,8 @@ Uber/
 │   └── Uber.DAL/                # Existing persistence, pending migration
 ├── tests/
 │   ├── Uber.Domain.Tests/
-│   └── Uber.Application.Tests/
+│   ├── Uber.Application.Tests/
+│   └── Uber.Behavior.Tests/      # Existing ride transition behavior
 ├── docs/
 ├── assets/
 ├── .gitignore
