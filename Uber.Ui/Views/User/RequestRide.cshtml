@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Request Ride";
+}
+
+<h2>Request a Ride</h2>
+
+<div>
+    <label>Start Latitude:</label>
+    <input id="startLat" type="text" />
+    <label>Start Longitude:</label>
+    <input id="startLng" type="text" />
+    <br />
+    <label>End Latitude:</label>
+    <input id="endLat" type="text" />
+    <label>End Longitude:</label>
+    <input id="endLng" type="text" />
+    <br />
+    <button id="requestBtn">Request Ride</button>
+</div>
+
+<div id="rideStatus"></div>
+
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/rideHub")
+        .build();
+
+    connection.on("RideAccepted", function (rideId) {
+        document.getElementById("rideStatus").innerText = "Driver accepted! Ride ID: " + rideId;
+    });
+
+    connection.on("RideRejected", function () {
+        document.getElementById("rideStatus").innerText = "Driver rejected your ride.";
+    });
+
+    connection.start().then(function () {
+        document.getElementById("requestBtn").addEventListener("click", function () {
+            fetch(`/Ride/RequestRide?StartLat=${startLat.value}&StartLng=${startLng.value}&EndLat=${endLat.value}&EndLng=${endLng.value}&Id=${"USER_ID"}`)
+                .then(res => res.text())
+                .then(txt => document.getElementById("rideStatus").innerText = txt);
+        });
+    });
+</script>

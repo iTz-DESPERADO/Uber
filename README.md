@@ -80,7 +80,7 @@ The application follows a clean three-layer architecture:
 
 ```
 ┌─────────────────────────────────────────┐
-│  Presentation Layer (Uber.PLL)          │
+│  Presentation Layer (Uber.Ui)          │
 │  - Controllers, Views, SignalR Hubs     │
 └─────────────────┬───────────────────────┘
                   │
@@ -97,7 +97,7 @@ The application follows a clean three-layer architecture:
 
 ### Layer Responsibilities
 
-**Uber.PLL (Presentation Layer)**
+**Uber.Ui (Presentation Layer)**
 
 * MVC Controllers for HTTP request handling
 * SignalR Hubs for real-time communication
@@ -124,7 +124,7 @@ The application follows a clean three-layer architecture:
 
 ```
 Uber/
-├── Uber.PLL/
+├── Uber.Ui/
 │   ├── Controllers/
 │   ├── Hubs/
 │   ├── Views/

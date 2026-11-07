@@ -1,0 +1,198 @@
+﻿@{
+    ViewData["Title"] = "Register as Driver";
+}
+
+@model Uber.BLL.ModelVM.Driver.CreateDriver
+
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: 60px auto;
+        padding: 40px;
+        background-color: #f9f9f9;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        font-family: 'Inter', sans-serif;
+    }
+
+        .register-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .register-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .register-container input[type="text"],
+        .register-container input[type="email"],
+        .register-container input[type="password"],
+        .register-container input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .register-container .car-type-options label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .register-container button {
+            width: 100%;
+            background-color: #000;
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+            .register-container button:hover {
+                background-color: #222;
+            }
+
+
+
+    .phone-container {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        overflow: hidden;
+        max-width: 250px;
+        font-family: sans-serif;
+    }
+
+    .phone-prefix {
+        background: #f9f9f9;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        font-weight: bold;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+        .phone-prefix img {
+            width: 20px;
+            height: auto;
+            margin-right: 6px;
+        }
+
+    .phone-input {
+        border: none;
+        padding: 8px;
+        outline: none;
+        flex: 1;
+        font-size: 14px;
+    }
+</style>
+
+
+
+
+<div class="register-container">
+    <h2>Register as Driver</h2>
+    <form  asp-controller="Driver" asp-action="RegisterDriver" method="post" enctype="multipart/form-data">
+
+        <label>Name</label>
+        <input asp-for="Name" type="text"  required />
+
+        <label>Email</label>
+        <input asp-for="Email" type="email"  required />
+
+        <div class="phone-container">
+            <div class="phone-prefix">
+                <img src="https://flagcdn.com/w20/eg.png" alt="Egypt Flag">
+                +20
+            </div>
+            <input asp-for="PhoneNumber"  id="phone"  class="phone-input" type="tel"
+                   inputmode="numeric"
+                   pattern="^0(10|11|12|15)\d{8}$"
+                   placeholder="01012345678" maxlength="11" required>
+        </div>
+
+        <label>Gender</label>
+        <div class="car-type-options">
+            <label><input asp-for="Gender" type="radio" value="Male" required />Male</label>
+            <label><input asp-for="Gender" type="radio" value="Female" />Female</label>
+        </div>
+
+
+        <label >Date of Birth</label>
+        <input asp-for="DateOfBirth" type="date" min="1925-01-01" max="2007-12-31"  required>
+
+
+        <label>Password</label>
+        <input asp-for="Password" type="password"  minlength="6" required />
+
+        <label>Vehicle Brand</label>
+        <input asp-for="Vehicle.Brand" type="text"  required />
+
+        <label>Vehicle Model</label>
+        <input asp-for="Vehicle.Model" type="text"  required />
+
+        <label>Year Of Production</label>
+        <input asp-for="Vehicle.YearMade" type="number"  min="2008" max="2025" required />
+
+        <label>Plate</label>
+        <input asp-for="Vehicle.Plate" type="text"  required />
+
+        <label>Color</label>
+        <input asp-for="Vehicle.Color" type="text"  required />
+
+        <label>Seating Capacity</label>
+        <input asp-for="Vehicle.SeatingCapacity"type="number"  min="1" max="14" required />
+
+
+
+
+        <label>Vehicle Type</label>
+        <div class="car-type-options">                         
+            <label><input asp-for="Vehicle.Type" type="radio"  value="Car" required /> Car</label>
+            <label><input asp-for="Vehicle.Type"  type="radio"  value="Scooter" /> Scooter</label>
+            <label><input asp-for="Vehicle.Type" type="radio"  value="Shuttle" /> Shuttle</label>
+        </div>
+
+        <label>Vehicle Transmission</label>
+        <div class="car-type-options">
+            <label><input asp-for="Vehicle.Transmission" type="radio"  value="Manual" required /> Manual</label>
+            <label><input asp-for="Vehicle.Transmission" type="radio" value="Automatic" /> Automatic</label>
+          </div>
+
+        <label>Vehicle Engine</label>
+        <div class="car-type-options">
+            <label><input asp-for="Vehicle.VehicleEngine" type="radio"  value="Gasoline" required /> Gas</label>
+            <label><input asp-for="Vehicle.VehicleEngine" type="radio"  value="Electric" /> Electric</label>
+        </div>
+
+        <label>Upload Your Image</label>
+        <input asp-for="File" type="file"  >
+
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+
+<script>
+    const phoneInput = document.getElementById('phone');
+
+    // Prevent non-digit input
+    phoneInput.addEventListener('input', () => {
+        phoneInput.value = phoneInput.value.replace(/\D/g, '');
+    });
+</script>

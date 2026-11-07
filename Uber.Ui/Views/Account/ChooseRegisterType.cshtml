@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Register Type";
+}
+
+<style>
+    .choose-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 80vh;
+        font-family: 'Inter', sans-serif;
+    }
+
+        .choose-container h2 {
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+    .choose-options a {
+        display: inline-block;
+        background-color: black;
+        color: white;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        margin: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+        .choose-options a:hover {
+            background-color: #333;
+        }
+</style>
+
+<div class="choose-container">
+    <h2>Register as</h2>
+    <div class="choose-options">
+        <a asp-controller="Account" asp-action="Register" asp-route-role="User">Rider</a>
+        <a asp-controller="Account" asp-action="Register" asp-route-role="Driver">Driver</a>
+    </div>
+</div>
