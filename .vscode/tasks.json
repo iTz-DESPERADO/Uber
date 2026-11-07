@@ -31,9 +31,9 @@
             "type": "process",
             "args": [
                 "watch",
-                "run",
                 "--project",
-                "${workspaceFolder}/Uber.sln"
+                "${workspaceFolder}/src/Uber.Ui/Uber.Ui.csproj",
+                "run"
             ],
             "problemMatcher": "$msCompile"
         }

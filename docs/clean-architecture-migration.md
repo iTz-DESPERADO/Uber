@@ -6,7 +6,8 @@
 - Stop after each phase for the owner's review. Start the next branch only after review, from the accepted previous phase (or the updated base after merge).
 - Preserve business rules, validation messages, routes, response shapes, redirects, authorization, SignalR events and persistence behavior.
 - Do not combine behavior fixes, package upgrades or database schema changes with structural migration.
-- Implement Result Pattern and CQRS locally. Do not add MediatR or another mediator library.
+- Implement Result Pattern, CQRS, Send dispatch and pipeline behaviors locally.
+  Do not add MediatR or another mediator library.
 
 ## Step 01: foundation (committed as `3a6d923`)
 
@@ -54,14 +55,21 @@ place until feature migration. Remove BLL/DAL only after all callers migrate.
 
 ## Planned review phases
 
-Step 02 adds the [Result Pattern contracts](result-pattern.md) and isolated
-domain tests. Existing application behavior remains on the legacy path until
-individual features migrate. CQRS is the next separate review phase.
+Production projects live under `src/`; test projects live under `tests/`.
+`Uber.sln`, `README.md` and `.gitignore` stay at the repository root. The
+solution mirrors these groups as solution folders. Run build and test commands
+from the root; run the web app using `src/Uber.Ui/Uber.Ui.csproj`.
+
+Step 02 added the [Result Pattern contracts](result-pattern.md) and isolated
+domain tests (commit `4cc9eb5`). Step 03 adds the [CQRS contracts, custom mediator
+and pipeline behaviors](cqrs.md). Existing application behavior remains on the legacy
+path until individual features migrate. Characterization tests for the first
+feature are the next separate review phase.
 
 | Phase / branch suffix | Deliverable |
 | --- | --- |
 | 02 `result-pattern` | Error, Result and Result<T> contracts with invariant tests; no blanket replacement of existing return values |
-| 03 `cqrs-foundation` | Local command/query and handler contracts, cancellation support and DI registration tests; inject handlers directly without a mediator |
+| 03 `cqrs-foundation` | Unified request/handler contracts, custom mediator with Send, ordered pipeline behaviors, cancellation support and DI/dispatch tests |
 | 04 `behavior-baseline` | Characterization tests for the first feature, including current failure messages and observable side effects |
 | 05 `domain-boundaries` | Extract domain concepts and define Identity/persistence boundaries with mapping and schema checks |
 | 06 `first-feature` | Migrate one small end-to-end feature through Application and Infrastructure; preserve its MVC contract |

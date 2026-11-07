@@ -76,7 +76,11 @@ Notify User   Repeat Process or Notify "No Drivers"
 
 ## 🏗️ Architecture
 
-The application follows a clean three-layer architecture:
+The running application currently uses three layers. Migration to Clean
+Architecture is in progress: Domain and Application contain Result Pattern
+and custom CQRS/mediator foundations; features still run through BLL/DAL.
+See the [migration plan](docs/clean-architecture-migration.md) and
+[CQRS guide](docs/cqrs.md).
 
 ```
 ┌─────────────────────────────────────────┐
@@ -124,21 +128,21 @@ The application follows a clean three-layer architecture:
 
 ```
 Uber/
-├── Uber.Ui/
-│   ├── Controllers/
-│   ├── Hubs/
-│   ├── Views/
-│   └── wwwroot/
-│
-├── Uber.BLL/
-│   ├── Services/
-│   └── DTOs/
-│
-└── Uber.DAL/
-    ├── Entities/
-    ├── Repo/
-    ├── Enums/
-    └── Data/
+├── src/
+│   ├── Uber.Ui/                 # MVC, Razor, SignalR and startup
+│   ├── Uber.Domain/             # Domain contracts and Result Pattern
+│   ├── Uber.Application/        # CQRS, mediator and pipelines
+│   ├── Uber.Infrastructure/     # Infrastructure foundation
+│   ├── Uber.BLL/                # Existing services, pending migration
+│   └── Uber.DAL/                # Existing persistence, pending migration
+├── tests/
+│   ├── Uber.Domain.Tests/
+│   └── Uber.Application.Tests/
+├── docs/
+├── assets/
+├── .gitignore
+├── README.md
+└── Uber.sln
 ```
 
 ---
@@ -147,10 +151,23 @@ Uber/
 
 ### Prerequisites
 
-* .NET 6.0 or higher
+* .NET SDK supporting .NET 8 and the .NET 8 ASP.NET Core runtime
 * SQL Server (or SQL Server Express)
 * Visual Studio 2022 or VS Code
 * Modern web browser with JavaScript enabled
+
+Run from the repository root:
+
+```sh
+dotnet restore Uber.sln
+dotnet build Uber.sln --no-restore
+dotnet test Uber.sln --no-build
+dotnet run --project src/Uber.Ui/Uber.Ui.csproj
+```
+
+Application startup requires local database and external-service settings.
+The local `src/Uber.Ui/appsettings.json` is ignored by Git. Contract tests
+do not require a database or external services.
 
 ---
 

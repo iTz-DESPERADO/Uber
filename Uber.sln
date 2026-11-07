@@ -3,19 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36310.24
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Ui", "Uber.Ui\Uber.Ui.csproj", "{1669054D-7B2B-4BC0-980C-B5CDBEF88318}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Ui", "src\Uber.Ui\Uber.Ui.csproj", "{1669054D-7B2B-4BC0-980C-B5CDBEF88318}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.DAL", "Uber.DAL\Uber.DAL.csproj", "{76F1A3BA-F6A5-4D9B-BC1E-F68B6CEEC09F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.DAL", "src\Uber.DAL\Uber.DAL.csproj", "{76F1A3BA-F6A5-4D9B-BC1E-F68B6CEEC09F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.BLL", "Uber.BLL\Uber.BLL.csproj", "{3CDB2A93-E54D-4533-A76E-2EDFAB680279}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.BLL", "src\Uber.BLL\Uber.BLL.csproj", "{3CDB2A93-E54D-4533-A76E-2EDFAB680279}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Domain", "Uber.Domain\Uber.Domain.csproj", "{E3FB25D9-2E93-4D4A-8803-A3A0D8EAFCD2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Domain", "src\Uber.Domain\Uber.Domain.csproj", "{E3FB25D9-2E93-4D4A-8803-A3A0D8EAFCD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Application", "Uber.Application\Uber.Application.csproj", "{91CDA85B-8F91-43E0-A561-7B372DF046D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Application", "src\Uber.Application\Uber.Application.csproj", "{91CDA85B-8F91-43E0-A561-7B372DF046D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Infrastructure", "Uber.Infrastructure\Uber.Infrastructure.csproj", "{DA32E268-9231-4A0D-9015-11812080D5FC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Infrastructure", "src\Uber.Infrastructure\Uber.Infrastructure.csproj", "{DA32E268-9231-4A0D-9015-11812080D5FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Domain.Tests", "Uber.Domain.Tests\Uber.Domain.Tests.csproj", "{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Domain.Tests", "tests\Uber.Domain.Tests\Uber.Domain.Tests.csproj", "{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Application.Tests", "tests\Uber.Application.Tests\Uber.Application.Tests.csproj", "{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1534BDFD-875E-4B01-8F59-635C32B3675A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{901D0D33-A86F-4AF8-9C08-44925CFD09AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,9 +57,23 @@ Global
 		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1669054D-7B2B-4BC0-980C-B5CDBEF88318} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
+		{76F1A3BA-F6A5-4D9B-BC1E-F68B6CEEC09F} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
+		{3CDB2A93-E54D-4533-A76E-2EDFAB680279} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
+		{E3FB25D9-2E93-4D4A-8803-A3A0D8EAFCD2} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
+		{91CDA85B-8F91-43E0-A561-7B372DF046D5} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
+		{DA32E268-9231-4A0D-9015-11812080D5FC} = {1534BDFD-875E-4B01-8F59-635C32B3675A}
+		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620} = {901D0D33-A86F-4AF8-9C08-44925CFD09AF}
+		{4250ABCE-8DC6-4898-BA57-07AF80E08CB7} = {901D0D33-A86F-4AF8-9C08-44925CFD09AF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F9B0B3ED-6B07-4CE2-AE77-821596B2F3FF}

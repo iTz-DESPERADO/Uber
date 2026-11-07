@@ -41,7 +41,7 @@ these contracts; exception handling and HTTP mapping remain boundary concerns.
 
 ## Verification
 
-`dotnet test Uber.Domain.Tests/Uber.Domain.Tests.csproj --nologo -v minimal`
+`dotnet test tests/Uber.Domain.Tests/Uber.Domain.Tests.csproj --nologo -v minimal`
 checks success/failure invariants, error identity and equality, invalid error
 arguments, default and nullable values, and guarded access to failed values.
 
