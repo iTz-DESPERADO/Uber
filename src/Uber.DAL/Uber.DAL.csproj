@@ -30,4 +30,7 @@
     <PackageReference Include="Stripe.net" Version="48.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Uber.Domain\Uber.Domain.csproj" />
+  </ItemGroup>
 </Project>

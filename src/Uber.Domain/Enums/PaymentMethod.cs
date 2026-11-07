@@ -1,4 +1,4 @@
-namespace Uber.DAL.Enums
+namespace Uber.Domain.Enums
 {
     public enum PaymentMethod
     {

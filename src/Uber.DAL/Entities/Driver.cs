@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 
 namespace Uber.DAL.Entities
 {

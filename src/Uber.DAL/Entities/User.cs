@@ -1,5 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using Uber.DAL.Enums;
+using System.Runtime.CompilerServices;
+using Uber.Domain.Enums;
 
 namespace Uber.DAL.Entities
 {

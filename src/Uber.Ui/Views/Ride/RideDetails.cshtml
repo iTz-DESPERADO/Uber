@@ -260,22 +260,22 @@
         <h4 style="color: #28a745; margin: 0;">
             @switch (Model.Status)
             {
-                case Uber.DAL.Enums.RideStatus.Pending:
+                case Uber.Domain.Enums.RideStatus.Pending:
                     <text>⏳ Ride Pending</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.Accepted:
+                case Uber.Domain.Enums.RideStatus.Accepted:
                     <text>✅ Ride Accepted</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.InProgress:
+                case Uber.Domain.Enums.RideStatus.InProgress:
                     <text>🚀 Ride In Progress</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.DriverWaiting:
+                case Uber.Domain.Enums.RideStatus.DriverWaiting:
                     <text>🚗 Driver Waiting at Pickup</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.Completed:
+                case Uber.Domain.Enums.RideStatus.Completed:
                     <text>✅ Ride Completed</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.Cancelled:
+                case Uber.Domain.Enums.RideStatus.Cancelled:
                     <text>❌ Ride Cancelled</text>
                     break;
                 default:
@@ -286,22 +286,22 @@
         <p style="margin: 10px 0 0 0; color: #2d5a2d;">
             @switch (Model.Status)
             {
-                case Uber.DAL.Enums.RideStatus.Pending:
+                case Uber.Domain.Enums.RideStatus.Pending:
                     <text>Waiting for driver to accept your ride request.</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.Accepted:
+                case Uber.Domain.Enums.RideStatus.Accepted:
                     <text>Your ride is confirmed and on the way!</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.DriverWaiting:
+                case Uber.Domain.Enums.RideStatus.DriverWaiting:
                     <text>Driver has arrived at pickup location. Please proceed to the vehicle.</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.InProgress:
+                case Uber.Domain.Enums.RideStatus.InProgress:
                     <text>Your ride is now in progress!</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.Completed:
+                case Uber.Domain.Enums.RideStatus.Completed:
                     <text>Your ride has been completed successfully!</text>
                     break;
-                case Uber.DAL.Enums.RideStatus.Cancelled:
+                case Uber.Domain.Enums.RideStatus.Cancelled:
                     <text>This ride has been cancelled.</text>
                     break;
                 default:
@@ -409,7 +409,7 @@
         }
 
 
-        @if (Model.Status != Uber.DAL.Enums.RideStatus.Completed && Model.Status != Uber.DAL.Enums.RideStatus.Cancelled)
+        @if (Model.Status != Uber.Domain.Enums.RideStatus.Completed && Model.Status != Uber.Domain.Enums.RideStatus.Cancelled)
         {
             <button id="cancelRideBtn" onclick="cancelRide()" style="padding: 15px 30px; background-color: #dc3545; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 0 10px;">
                 ❌ Cancel Ride
@@ -417,7 +417,7 @@
         }
 
 
-        @if (Model.Status == Uber.DAL.Enums.RideStatus.Completed || Model.Status == Uber.DAL.Enums.RideStatus.Cancelled)
+        @if (Model.Status == Uber.Domain.Enums.RideStatus.Completed || Model.Status == Uber.Domain.Enums.RideStatus.Cancelled)
         {
             <a href="/Home" style="display: inline-block; padding: 15px 30px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 16px; margin: 0 10px;">
                 🏠 Back to Home

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,8 @@ using Uber.BLL.ModelVM.Ride;
 using Uber.BLL.ModelVM.User;
 using Uber.BLL.Services.Abstraction;
 using Uber.DAL.Entities;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
+using Uber.Domain.Rides;
 using Uber.DAL.Repo.Abstraction;
 using Uber.DAL.Repo.Impelementation;
 using Uber.DAL.Repo.Implementation;
@@ -149,9 +150,10 @@ namespace Uber.BLL.Services.Impelementation
                     return (false, "Ride not found");
                 }
 
-                if (ride.Status != RideStatus.DriverWaiting)
+                var transition = RideTransitionRules.CanStart(ride.Status);
+                if (transition.IsFailure)
                 {
-                    return (false, $"Cannot start ride. Ride is currently in {ride.Status} status. Expected: DriverWaiting");
+                    return (false, transition.Error!.Message);
                 }
 
                 var (ok, updateErr) = rideRepo.UpdateStatus(id, RideStatus.InProgress);
@@ -173,9 +175,10 @@ namespace Uber.BLL.Services.Impelementation
                     return (false, "Ride not found");
                 }
 
-                if (ride.Status != RideStatus.InProgress)
+                var transition = RideTransitionRules.CanComplete(ride.Status);
+                if (transition.IsFailure)
                 {
-                    return (false, $"Cannot complete ride. Ride is currently in {ride.Status} status. Expected: InProgress");
+                    return (false, transition.Error!.Message);
                 }
 
                 var (ok, updateErr) = rideRepo.UpdateStatus(id, RideStatus.Completed);
@@ -197,9 +200,10 @@ namespace Uber.BLL.Services.Impelementation
                     return (false, "Ride not found");
                 }
 
-                if (ride.Status != RideStatus.Accepted)
+                var transition = RideTransitionRules.CanMarkDriverWaiting(ride.Status);
+                if (transition.IsFailure)
                 {
-                    return (false, $"Cannot mark driver as arrived. Ride is currently in {ride.Status} status. Expected: Accepted");
+                    return (false, transition.Error!.Message);
                 }
 
                 var (ok, updateErr) = rideRepo.UpdateStatus(id, RideStatus.DriverWaiting);

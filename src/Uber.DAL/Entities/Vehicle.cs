@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 
 namespace Uber.DAL.Entities
 {

@@ -65,13 +65,17 @@ domain tests (commit `4cc9eb5`). Step 03 added the [CQRS contracts, custom media
 and pipeline behaviors](cqrs.md), committed as `879617e`. Step 04 establishes the
 [ride transition behavior baseline](ride-behavior-baseline.md). Existing
 application behavior remains on the legacy path until individual features migrate.
+Step 04 was committed as `3f9bbe1`. Step 05 begins the
+[domain boundary extraction](domain-boundaries.md) with enums and ride transition
+rules. The wider Identity/entity split is deferred to feature-specific reviews
+to avoid combining unrelated persistence and authentication changes.
 
 | Phase / branch suffix | Deliverable |
 | --- | --- |
 | 02 `result-pattern` | Error, Result and Result<T> contracts with invariant tests; no blanket replacement of existing return values |
 | 03 `cqrs-foundation` | Unified request/handler contracts, custom mediator with Send, ordered pipeline behaviors, cancellation support and DI/dispatch tests |
 | 04 `behavior-baseline` | Characterization tests for the first feature, including current failure messages and observable side effects |
-| 05 `domain-boundaries` | Extract domain concepts and define Identity/persistence boundaries with mapping and schema checks |
+| 05 `domain-boundaries` | Extract enums and ride rules; define Identity/persistence boundaries and verify the generated schema is unchanged |
 | 06 `first-feature` | Migrate one small end-to-end feature through Application and Infrastructure; preserve its MVC contract |
 | 07+ `feature-name` | Separate reviewed branches for remaining user, driver, ride, admin, account and payment use cases; split large features further |
 | final `remove-legacy-layers` | Remove unused BLL/DAL, verify dependency direction and run regression checks |

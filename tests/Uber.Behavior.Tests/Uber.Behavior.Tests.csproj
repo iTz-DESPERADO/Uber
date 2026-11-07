@@ -18,4 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Uber.Ui\Uber.Ui.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Baselines\schema-before-domain.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

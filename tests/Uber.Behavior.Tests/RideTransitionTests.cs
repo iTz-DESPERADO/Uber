@@ -8,7 +8,7 @@ using Uber.BLL.ModelVM.Ride;
 using Uber.BLL.Services.Abstraction;
 using Uber.BLL.Services.Impelementation;
 using Uber.DAL.Entities;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 using Uber.DAL.Repo.Abstraction;
 using Uber.Ui.Controllers;
 using Xunit;

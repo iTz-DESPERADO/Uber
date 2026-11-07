@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Uber.DAL.DataBase;
 using Uber.DAL.Entities;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 using Uber.DAL.Repo.Abstraction;
 
 namespace Uber.DAL.Repo.Implementation

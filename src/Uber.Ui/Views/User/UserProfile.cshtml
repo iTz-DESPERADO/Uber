@@ -1,4 +1,4 @@
-﻿@model Uber.BLL.ModelVM.User.UserProfileEditVM
+@model Uber.BLL.ModelVM.User.UserProfileEditVM
 @{
     ViewData["Title"] = "User Profile";
 }
@@ -76,19 +76,19 @@
                                 <td>@(ride.Duration + " Min")</td>
                                 <td>@(ride.Distance + "Km")</td>
                                 <td>
-                                    @if (ride.Status == Uber.DAL.Enums.RideStatus.Rejected || ride.Status == Uber.DAL.Enums.RideStatus.Cancelled)
+                                    @if (ride.Status == Uber.Domain.Enums.RideStatus.Rejected || ride.Status == Uber.Domain.Enums.RideStatus.Cancelled)
                                     {
                                         <span class="badge bg-danger">@ride.Status</span>
                                     }
-                                    else if (ride.Status == Uber.DAL.Enums.RideStatus.InProgress || ride.Status == Uber.DAL.Enums.RideStatus.Pending)
+                                    else if (ride.Status == Uber.Domain.Enums.RideStatus.InProgress || ride.Status == Uber.Domain.Enums.RideStatus.Pending)
                                     {
                                         <span class="badge bg-warning">@ride.Status</span>
                                     }
-                                    else if (ride.Status == Uber.DAL.Enums.RideStatus.Completed || ride.Status == Uber.DAL.Enums.RideStatus.Accepted)
+                                    else if (ride.Status == Uber.Domain.Enums.RideStatus.Completed || ride.Status == Uber.Domain.Enums.RideStatus.Accepted)
                                     {
                                         <span class="badge bg-success">@ride.Status</span>
                                     }
-                                    else if (ride.Status == Uber.DAL.Enums.RideStatus.DriverWaiting)
+                                    else if (ride.Status == Uber.Domain.Enums.RideStatus.DriverWaiting)
                                     {
                                         <span class="badge bg-info">@ride.Status</span>
                                     }

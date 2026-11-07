@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Uber.DAL.Enums;
+using Microsoft.AspNetCore.Identity;
+using Uber.Domain.Enums;
 
 namespace Uber.DAL.Entities
 {

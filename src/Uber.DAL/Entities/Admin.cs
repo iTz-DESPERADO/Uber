@@ -1,5 +1,5 @@
-﻿using System.IO;
-using Uber.DAL.Enums;
+using System.IO;
+using Uber.Domain.Enums;
 
 namespace Uber.DAL.Entities
 {

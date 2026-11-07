@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Routing.Constraints;
-using Uber.DAL.Enums;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Uber.Domain.Enums;
 
 namespace Uber.BLL.ModelVM.Ride
 {

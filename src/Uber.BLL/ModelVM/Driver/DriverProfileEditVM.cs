@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Uber.BLL.ModelVM.User;
 using Uber.DAL.Entities;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 
 namespace Uber.BLL.ModelVM.Driver
 {

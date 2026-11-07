@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Uber.DAL.Entities;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 
 namespace Uber.BLL.ModelVM.Driver
 {

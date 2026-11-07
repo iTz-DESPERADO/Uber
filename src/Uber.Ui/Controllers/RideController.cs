@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Uber.BLL.ModelVM.Ride;
 using Uber.BLL.Services.Abstraction;
 using Uber.DAL.Entities;
-using Uber.DAL.Enums;
+using Uber.Domain.Enums;
 using System;
 
 namespace Uber.Ui.Controllers

@@ -418,7 +418,7 @@
                 <div class="detail-item">
                     <span class="detail-label">Duration:</span>
                     <span class="detail-value">
-                        @if (Model.Status == Uber.DAL.Enums.RideStatus.Completed)
+                        @if (Model.Status == Uber.Domain.Enums.RideStatus.Completed)
                         {
                             <span>~30 minutes</span>
                         }
@@ -431,7 +431,7 @@
                 <div class="detail-item">
                     <span class="detail-label">Fare:</span>
                     <span class="detail-value">
-                        @if (Model.Status == Uber.DAL.Enums.RideStatus.Completed)
+                        @if (Model.Status == Uber.Domain.Enums.RideStatus.Completed)
                         {
                             <span style="color: #28a745; font-weight: 600;">
                                 $@(CalculateFare(Model.StartLat, Model.StartLng, Model.EndLat, Model.EndLng).ToString("F2"))
@@ -503,7 +503,7 @@
             <a asp-controller="Admin" asp-action="Admin_Rides" class="btn btn-secondary">
                 ↩️ Back to Rides
             </a>
-            @if (Model.Status == Uber.DAL.Enums.RideStatus.Pending || Model.Status == Uber.DAL.Enums.RideStatus.Accepted)
+            @if (Model.Status == Uber.Domain.Enums.RideStatus.Pending || Model.Status == Uber.Domain.Enums.RideStatus.Accepted)
             {
                 <form method="post" action="@Url.Action("CancelRide", "Admin")" style="display: inline;">
                     <input type="hidden" name="id" value="@Model.Id" />
