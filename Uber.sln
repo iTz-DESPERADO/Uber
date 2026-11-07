@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Application", "Uber.Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Infrastructure", "Uber.Infrastructure\Uber.Infrastructure.csproj", "{DA32E268-9231-4A0D-9015-11812080D5FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uber.Domain.Tests", "Uber.Domain.Tests\Uber.Domain.Tests.csproj", "{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{DA32E268-9231-4A0D-9015-11812080D5FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA32E268-9231-4A0D-9015-11812080D5FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA32E268-9231-4A0D-9015-11812080D5FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3BFBB1D-65A5-4339-AA78-ED0E7FEB2620}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

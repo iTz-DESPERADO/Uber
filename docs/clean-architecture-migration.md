@@ -8,7 +8,7 @@
 - Do not combine behavior fixes, package upgrades or database schema changes with structural migration.
 - Implement Result Pattern and CQRS locally. Do not add MediatR or another mediator library.
 
-## Step 01: foundation (ready for review)
+## Step 01: foundation (committed as `3a6d923`)
 
 Base commit: `08f910d`. Existing projects target .NET 8.
 
@@ -53,6 +53,10 @@ place until feature migration. Remove BLL/DAL only after all callers migrate.
   equivalence is verified. Do not generate or apply migrations in this phase.
 
 ## Planned review phases
+
+Step 02 adds the [Result Pattern contracts](result-pattern.md) and isolated
+domain tests. Existing application behavior remains on the legacy path until
+individual features migrate. CQRS is the next separate review phase.
 
 | Phase / branch suffix | Deliverable |
 | --- | --- |
