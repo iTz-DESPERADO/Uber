@@ -1,55 +1,82 @@
+@{
+    const bool showShell = true;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Uber.Ui</title>
+    <meta name="theme-color" content="#101414" />
+    <title>@ViewData["Title"] · Uber</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Uber.Ui.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" />
-
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body style="margin: 0; padding: 0;">
+<body>
+    <div class="app-shell">
+        @if (showShell)
+        {
+            <header class="site-header">
+                <nav class="site-nav" aria-label="Primary navigation">
+                    <a asp-controller="Home" asp-action="Index" class="brand" aria-label="Uber home">
+                        <span class="brand-mark">U</span>
+                        <span class="brand-label">Uber</span>
+                    </a>
+                    <div class="nav-actions">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            if (User.IsInRole("Driver"))
+                            {
+                                <a asp-controller="Driver" asp-action="Dashboard" class="nav-link">Dashboard</a>
+                                <a asp-controller="Driver" asp-action="DriverProfile" class="btn-app btn-app--light">Profile</a>
+                            }
+                            else if (User.IsInRole("Admin"))
+                            {
+                                <a asp-controller="Admin" asp-action="AdminDashBoard" class="btn-app btn-app--light">Admin panel</a>
+                            }
+                            else
+                            {
+                                <a asp-controller="User" asp-action="UserProfile" class="btn-app btn-app--light">My account</a>
+                            }
+                            <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                                <button type="submit" class="nav-logout" aria-label="Log out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="nav-link">Log in</a>
+                            <a asp-controller="Account" asp-action="ChooseRegisterType" class="btn-app btn-app--light">Get started</a>
+                        }
+                    </div>
+                </nav>
+            </header>
+        }
 
-    <main role="main" class="pb-3">
-        @RenderBody()
-    </main>
+        <main class="app-main" role="main">
+            @RenderBody()
+        </main>
+
+        @if (showShell)
+        {
+            <footer class="site-footer">© @DateTime.UtcNow.Year Uber. Built for safer, simpler city travel.</footer>
+        }
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
-
     <script>
-            $(document).ready( function () {
-            $('#Users').DataTable();
-        } );
+        document.addEventListener('DOMContentLoaded', () => {
+            ['Users', 'Admins', 'Drivers', 'Rides', 'rideUserprofile'].forEach(id => {
+                const table = document.getElementById(id);
+                if (table && window.DataTable) new DataTable(table);
+            });
+        });
     </script>
-    <script>
-            $(document).ready( function () {
-            $('#Admins').DataTable();
-        } );
-    </script>
-    <script>
-            $(document).ready( function () {
-            $('#Drivers').DataTable();
-        } );
-    </script>
-    <script>
-            $(document).ready( function () {
-            $('#Rides').DataTable();
-        } );
-    </script>
-    <script>
-            $(document).ready( function () {
-            $('#rideUserprofile').DataTable();
-        } );
-    </script>
-
-
-    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

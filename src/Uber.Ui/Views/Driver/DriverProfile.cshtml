@@ -1,29 +1,22 @@
-@model Uber.DAL.Entities.Driver
+@model Uber.Application.Drivers.DriverProfileResponse
 @{
     ViewData["Title"] = "Driver Profile";
-}
-
-@if (TempData["PaymentMessage"] != null)
-{
-    <script>
-        alert('@TempData["PaymentMessage"]');
-    </script>
 }
 
 <div class="profile-container">
     <aside class="sidebar">
         <div class="user-info">
             <div class="icon-placeholder">
-                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                @if (!string.IsNullOrEmpty(Model.Driver.ImagePath))
                 {
-                    <img src="~/Files/@Model.ImagePath" alt="Driver Photo" class="user-icon" />
+                    <img src="~/Files/@Model.Driver.ImagePath" alt="Driver Photo" class="user-icon" />
                 }
                 else
                 {
                     <i class="fas fa-user"></i>
                 }
             </div>
-            <h3>@Model.Name</h3>
+            <h3>@Model.Driver.Name</h3>
         </div>
 
         <ul>
@@ -55,13 +48,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.Rides != null && Model.Rides.Any())
+                    @if (Model.Rides.Any())
                     {
                         @foreach (var ride in Model.Rides)
                         {
                             <tr>
-                                <td>@ride.Id</td>                              
-                                <td>@('$' + ride.Price?.ToString("F2"))</td>
+                                <td><a asp-controller="Ride" asp-action="RideDetails" asp-route-id="@ride.Id">#@ride.Id</a></td>
+                                <td>EGP @ride.Price?.ToString("F2")</td>
                                 <td>@ride.CreatedAt.ToString()</td>
                                 <td>@(ride.Duration + " Min")</td>
                                 <td>@(ride.Distance + "Km")</td>
@@ -101,7 +94,7 @@
                     <span class="wallet-balance-label">Cash balance</span>
                 </div>
                 <div class="wallet-balance">
-                    $@Model.Balance
+                    EGP @Model.Driver.Balance.ToString("F2")
                 </div>
                 <div class="wallet-actions">
                     <a asp-controller="Payment" asp-action="Index" class="wallet-btn add">Add Cash</a>
@@ -112,87 +105,81 @@
         <section id="settings" class="tab-content">
             <h2 style="text-align:center; margin-bottom: 20px;">Profile</h2>
 
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success" style="text-align: center; margin-bottom: 20px; padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px;">
-                    @TempData["SuccessMessage"]
-                </div>
-            }
-
-            <form asp-controller="Driver" asp-action="EditDriver" method="post" enctype="multipart/form-data" class="edit-driver-form" id="driverForm">
+            <form class="edit-driver-form" id="driverProfileForm">
                 <div class="form-group">
                     <label>Name</label>
-                    <input asp-for="Name" type="text" class="form-control" required />
+                    <input name="Name" value="@Model.Driver.Name" type="text" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input asp-for="Email" type="email" class="form-control" readonly />
+                    <input name="Email" value="@Model.Driver.Email" type="email" class="form-control" readonly />
                 </div>
                 <div class="phone-container">
                     <div class="phone-prefix">
                         <img src="https://flagcdn.com/w20/eg.png" alt="Egypt Flag">
                         +20
                     </div>
-                    <input asp-for="PhoneNumber" id="phone" class="phone-input" type="tel"
+                    <input name="PhoneNumber" value="@Model.Driver.PhoneNumber" id="phone" class="phone-input" type="tel"
                            inputmode="numeric"
                            pattern="^(10|11|12|15)\d{8}$"
                            placeholder="1012345678" maxlength="10" required>
                 </div>
                 <div class="form-group">
                     <label>Gender</label>
-                    <input type="text" class="form-control" value="@Model.Gender" readonly />
+                    <input name="Gender" type="hidden" value="@((int)Model.Driver.Gender)" />
+                    <input type="text" class="form-control" value="@Model.Driver.Gender" readonly />
                 </div>
                 <div class="form-group">
                     <label>Date of Birth</label>
-                    <input asp-for="DateOfBirth" type="date" min="1925-01-01" max="2007-12-31" required readonly />
+                    <input name="DateOfBirth" value="@Model.Driver.DateOfBirth.ToString("yyyy-MM-dd")" type="date" min="1925-01-01" max="2007-12-31" required readonly />
                 </div>
 
                 <h3 style="margin-top: 20px;">Vehicle Info</h3>
 
                 <div class="form-group">
                     <label>Brand</label>
-                    <input asp-for="Vehicle.Brand" type="text" class="form-control" required />
+                    <input name="Vehicle.Brand" value="@Model.Driver.VehicleBrand" type="text" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Model</label>
-                    <input asp-for="Vehicle.Model" type="text" class="form-control" required />
+                    <input name="Vehicle.Model" value="@Model.Driver.VehicleModel" type="text" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Year</label>
-                    <input asp-for="Vehicle.YearMade" type="number" min="2008" max="2025" class="form-control" required />
+                    <input name="Vehicle.YearMade" value="@Model.Driver.VehicleYear" type="number" min="2008" max="2025" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Plate</label>
-                    <input asp-for="Vehicle.Plate" type="text" class="form-control" required />
+                    <input name="Vehicle.Plate" value="@Model.Driver.VehiclePlate" type="text" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Color</label>
-                    <input asp-for="Vehicle.Color" type="text" class="form-control" required />
+                    <input name="Vehicle.Color" value="@Model.Driver.VehicleColor" type="text" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Seating Capacity</label>
-                    <input asp-for="Vehicle.SeatingCapacity" type="number" min="1" max="14" class="form-control" required />
+                    <input name="Vehicle.SeatingCapacity" value="@Model.Driver.VehicleSeatingCapacity" type="number" min="1" max="14" class="form-control" required />
                 </div>
                 <div class="form-group">
                     <label>Vehicle Type</label>
                     <div class="radio-group">
-                        <label><input asp-for="Vehicle.Type" type="radio" value="Car" /> Car</label>
-                        <label><input asp-for="Vehicle.Type" type="radio" value="Scooter" /> Scooter</label>
-                        <label><input asp-for="Vehicle.Type" type="radio" value="Shuttle" /> Shuttle</label>
+                        <label><input name="Vehicle.Type" type="radio" value="Car" /> Car</label>
+                        <label><input name="Vehicle.Type" type="radio" value="Scooter" /> Scooter</label>
+                        <label><input name="Vehicle.Type" type="radio" value="Shuttle" /> Shuttle</label>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Transmission</label>
                     <div class="radio-group">
-                        <label><input asp-for="Vehicle.Transmission" type="radio" value="Manual" /> Manual</label>
-                        <label><input asp-for="Vehicle.Transmission" type="radio" value="Automatic" /> Automatic</label>
+                        <label><input name="Vehicle.Transmission" type="radio" value="Manual" /> Manual</label>
+                        <label><input name="Vehicle.Transmission" type="radio" value="Automatic" /> Automatic</label>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Engine</label>
                     <div class="radio-group">
-                        <label><input asp-for="Vehicle.VehicleEngine" type="radio" value="Gasoline" /> Gas</label>
-                        <label><input asp-for="Vehicle.VehicleEngine" type="radio" value="Electric" /> Electric</label>
+                        <label><input name="Vehicle.VehicleEngine" type="radio" value="Gasoline" /> Gas</label>
+                        <label><input name="Vehicle.VehicleEngine" type="radio" value="Electric" /> Electric</label>
                     </div>
                 </div>
 
@@ -247,6 +234,33 @@
         </section>
     </main>
 </div>
+
+<script>
+    document.getElementById('driverProfileForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+
+        const response = await fetch('/api/drivers/me', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: form.elements.Name.value,
+                email: form.elements.Email.value,
+                phoneNumber: form.elements.PhoneNumber.value,
+                dateOfBirth: form.elements.DateOfBirth.value,
+                gender: Number(form.elements.Gender.value)
+            })
+        });
+
+        if (response.ok) {
+            window.location.reload();
+            return;
+        }
+
+        const problem = await response.json();
+        alert(problem.detail || 'Unable to update profile');
+    });
+</script>
 
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 

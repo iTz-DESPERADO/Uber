@@ -1,16 +1,70 @@
 ﻿@model string 
 
-<h2>Waiting for a driver...</h2>
-<p>Ride ID: @Model</p>
-<div id="status">Looking for drivers...</div>
-<div id="connectionStatus" style="margin-top: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-    <strong>Connection Status:</strong> <span id="statusText">Connecting...</span>
-</div>
+@{
+    ViewData["Title"] = "Finding your driver";
+}
+<section class="waiting-card">
+    <div class="waiting-pulse"><i class="fa-solid fa-car-side"></i></div>
+    <span class="auth-aside__eyebrow" style="color:var(--color-primary);">Ride @Model</span>
+    <h1>Finding the best driver nearby</h1>
+    <p>We’re sharing your request with available drivers. This usually takes less than a minute.</p>
+    <div id="status" class="waiting-status">Looking for drivers…</div>
+    <div id="connectionStatus" class="connection-pill">
+        <span class="connection-dot"></span>
+        <strong>Live updates:</strong> <span id="statusText">Connecting…</span>
+    </div>
+</section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+<style>
+    .waiting-card { width:min(680px,calc(100% - 2rem)); margin:clamp(2rem,8vw,7rem) auto; padding:clamp(1.5rem,5vw,3rem); text-align:center; background:#fff; border:1px solid var(--color-border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); }
+    .waiting-card h1 { margin:.8rem 0; font-size:clamp(2rem,5vw,3.25rem); letter-spacing:-.045em; }
+    .waiting-card > p { max-width:520px; margin:0 auto 1.5rem; color:var(--color-muted); line-height:1.7; }
+    .waiting-pulse { width:76px; height:76px; display:grid; place-items:center; margin:0 auto 1.5rem; border-radius:1.4rem; color:#fff; background:var(--color-primary); font-size:1.75rem; animation:waitingPulse 1.8s infinite; }
+    .waiting-status { padding:1rem; border-radius:.9rem; background:var(--color-primary-soft); color:var(--color-primary-dark); font-weight:700; }
+    .connection-pill { display:inline-flex; align-items:center; gap:.5rem; margin-top:1rem; padding:.55rem .8rem; border:1px solid var(--color-border); border-radius:999px; color:var(--color-muted); font-size:.8rem; }
+    .connection-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; }
+    @@keyframes waitingPulse { 50% { transform:translateY(-5px); box-shadow:0 14px 30px rgba(15,118,110,.25); } }
+</style>
 <script>
     let connection = null;
     let isConnected = false;
+    const currentRideId = Number('@Model');
+
+    async function refreshRideState() {
+        if (!Number.isInteger(currentRideId) || currentRideId <= 0) {
+            window.location.href = '/Home';
+            return;
+        }
+
+        const response = await fetch(`/api/rides/${currentRideId}`, {
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            document.getElementById('status').textContent =
+                'We could not restore this ride. Return home and try again.';
+            return;
+        }
+
+        const ride = await response.json();
+
+        if (['Accepted', 'DriverWaiting', 'InProgress', 'Completed', 'Cancelled'].includes(ride.status)) {
+            window.location.href = `/Ride/RideDetails/${currentRideId}`;
+            return;
+        }
+
+        if (ride.status === 'Rejected') {
+            document.getElementById('status').innerHTML = `
+                <div style="color:#b45309; padding:20px; text-align:center;">
+                    <h3>No driver is available right now</h3>
+                    <p>Please return home and request another ride.</p>
+                    <a class="btn-app btn-app--primary" href="/Home">Back to Home</a>
+                </div>`;
+            return;
+        }
+
+        document.getElementById('status').textContent = 'Looking for drivers…';
+    }
 
     async function initializeConnection() {
         try {
@@ -28,9 +82,11 @@
                 updateStatus("Reconnecting...", "orange");
             });
 
-            connection.onreconnected(() => {
+            connection.onreconnected(async () => {
                 updateStatus("Connected", "green");
                 isConnected = true;
+                await connection.invoke("JoinRideGroup", currentRideId);
+                await refreshRideState();
             });
 
             connection.onclose(() => {
@@ -44,7 +100,8 @@
             isConnected = true;
 
             // Join the ride group when page loads
-            await connection.invoke("JoinRideGroup", "ride-@Model");
+            await connection.invoke("JoinRideGroup", currentRideId);
+            await refreshRideState();
 
         } catch (err) {
             console.error("SignalR Connection Error:", err);
@@ -78,6 +135,7 @@
                         <p>Redirecting to ride details in 3 seconds...</p>
                     </div>
                 `;
+                window.setTimeout(refreshRideState, 250);
                 
                 // Redirect to ride details page after a short delay
                 setTimeout(() => {
@@ -98,16 +156,6 @@
             }
         });
 
-        // Listen for test messages
-        connection.on("TestMessage", function (message) {
-            document.getElementById("status").innerHTML = `
-                <div style="color: blue; padding: 20px; text-align: center;">
-                    <h3>🧪 Test Message Received</h3>
-                    <p>${message}</p>
-                    <p>SignalR is working correctly!</p>
-                </div>
-            `;
-        });
     }
 
     function updateStatus(message, color) {
@@ -120,6 +168,7 @@
     document.addEventListener('DOMContentLoaded', function() {
 
         initializeConnection();
+        refreshRideState();
 	});
 
 </script>

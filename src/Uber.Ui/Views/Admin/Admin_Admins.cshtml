@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Uber.BLL.ModelVM.Admin.EditAdmin>
+﻿@model IEnumerable<Uber.Application.Admins.AdminResponse>
 
 @{
     ViewData["Title"] = "Admins";
@@ -94,33 +94,6 @@
         background-color: #c82333;
     }
 </style>
-@* 
-<header>
-    <div class="nav-left">
-        <h1>Uber</h1>
-        <a href="#">Ride</a>
-        <a href="#">Drive</a>
-    </div>
-    <div class="nav-right">
-        <a asp-controller="Account" asp-action="ChooseLoginType">Log in</a>
-        <a asp-controller="Account" asp-action="ChooseRegisterType" class="signup-btn">Sign up</a>
-    </div>
-</header>
- *@
-
-
-
-
-
-
-
-
-<header>
-    <div class="nav-left">
-        <h1>Uber</h1>
-    </div>
-</header>
-
 <div class="page-title">Admins Management</div>
 <table id="Admins" class="display">
     <thead class="thead-dark">
@@ -156,20 +129,4 @@
         }
     </tbody>
 </table>
-
-<script>
-    function deleteAdmin(id) {
-        if (confirm("Are you sure you want to delete this Admin?")) {
-            fetch(`/Admin/DeleteAdmin/${id}`, { method: 'POST' })
-                .then(response => {
-                    if (response.ok) {
-                        document.querySelector(`tr[data-id='${id}']`).remove();
-                    } else {
-                        alert("Error deleting Admin.");
-                    }
-                });
-        }
-    }
-</script>
-
 

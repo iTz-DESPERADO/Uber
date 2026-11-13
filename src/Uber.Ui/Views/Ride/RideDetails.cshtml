@@ -1,4 +1,4 @@
-@model Uber.DAL.Entities.Ride
+@model Uber.Application.Rides.GetRideById.RideDetailsResponse
 
 @{
     ViewData["Title"] = "Ride Details";
@@ -353,18 +353,18 @@
 
 
     <!-- Driver Information (if user is viewing) -->
-    @if (isUser && Model.Driver != null)
+    @if (isUser && Model.DriverName != null)
     {
         <div style="background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
             <h4 style="color: #495057; margin-bottom: 20px; border-bottom: 2px solid #e9ecef; padding-bottom: 10px;">👨‍💼 Driver Information</h4>
 
             <div style="display: flex; align-items: center; gap: 20px;">
                 <div style="width: 60px; height: 60px; background-color: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">
-                    @(Model.Driver.UserName?.Substring(0, 1).ToUpper() ?? "D")
+                    @(Model.DriverName?.Substring(0, 1).ToUpper() ?? "D")
                 </div>
 
                 <div>
-                    <h5 style="margin: 0; color: #495057;">@Model.Driver.UserName</h5>
+                    <h5 style="margin: 0; color: #495057;">@Model.DriverName</h5>
                     <p style="margin: 5px 0 0 0; color: #6c757d;">Your assigned driver</p>
                 </div>
             </div>
@@ -372,18 +372,18 @@
     }
 
     <!-- User Information (if driver is viewing) -->
-    @if (isDriver && Model.User != null)
+    @if (isDriver && Model.UserName != null)
     {
         <div style="background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
             <h4 style="color: #495057; margin-bottom: 20px; border-bottom: 2px solid #e9ecef; padding-bottom: 10px;">👤 Passenger Information</h4>
 
             <div style="display: flex; align-items: center; gap: 20px;">
                 <div style="width: 60px; height: 60px; background-color: #6c757d; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">
-                    @(Model.User.UserName?.Substring(0, 1).ToUpper() ?? "U")
+                    @(Model.UserName?.Substring(0, 1).ToUpper() ?? "U")
                 </div>
 
                 <div>
-                    <h5 style="margin: 0; color: #495057;">@Model.User.UserName</h5>
+                    <h5 style="margin: 0; color: #495057;">@Model.UserName</h5>
                     <p style="margin: 5px 0 0 0; color: #6c757d;">Your passenger</p>
                 </div>
             </div>
@@ -470,7 +470,6 @@
 
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
 <script>
 
     window.addEventListener("load", initializeMap);
@@ -481,6 +480,8 @@
     let currentRating = 0;
     let ratingTarget = ''; // 'user' or 'driver'
     let currentRideId = @Model.Id;
+    let customerRatedDriver = @Model.CustomerRatingForDriver.HasValue.ToString().ToLower();
+    let driverRatedCustomer = @Model.DriverRatingForCustomer.HasValue.ToString().ToLower();
 
     // Toast notification system
     function showToast(type = 'info', title = '', message = '', duration = 5000) {
@@ -649,11 +650,11 @@
                 // Update distance and duration
                 const distance = (route.distance / 1000).toFixed(2);
                 const duration = (route.duration / 60).toFixed(1);
-                const price = (distance * 7 + duration * 1.5 + 7).toFixed(2)
+                const price = '@(Model.Price?.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) ?? "0.00")';
 
                 document.getElementById('routeDistance').textContent = distance + ' km';
                 document.getElementById('routeDuration').textContent = duration + ' min';
-                document.getElementById('price').textContent = price + 'pound';
+                document.getElementById('price').textContent = `EGP ${price}`;
             }
         } catch (error) {
             console.error('Error drawing route:', error);
@@ -672,7 +673,7 @@
                          const driverId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
                          if (driverId && driverId !== '') {
                              try {
-                                 await connection.invoke("JoinDriverGroup", driverId);
+                                 await connection.invoke("JoinDriverGroup");
                              } catch (err) {
                                  console.error("Failed to join driver group:", err);
                              }
@@ -696,7 +697,7 @@
             await connection.start();
 
                  // Join the ride group
-            await connection.invoke("JoinRideGroup", "ride-@Model.Id");
+            await connection.invoke("JoinRideGroup", Number(@Model.Id));
 
                  // Join driver group if user is a driver
                  await joinDriverGroupIfNeeded();
@@ -739,9 +740,11 @@
                      updateSignalRStatus("Reconnecting...", "#ffc107");
                  });
 
-                 connection.onreconnected((connectionId) => {
+                 connection.onreconnected(async (connectionId) => {
             isConnected = true;
                      updateSignalRStatus("Connected", "#28a745");
+                     await connection.invoke("JoinRideGroup", Number(@Model.Id));
+                     await joinDriverGroupIfNeeded();
                  });
 
         } catch (err) {
@@ -827,25 +830,32 @@
              // Rating event listeners
              connection.on("UserRated", function (rideId, rating) {
                  if (rideId == @Model.Id) {
+                     driverRatedCustomer = true;
+
                      // Show success message for user rating
                      showRideSuccessToast('Rating Submitted', `User has been rated ${rating} star${rating > 1 ? 's' : ''}!`);
 
                      // Show rating modal for user to rate driver (only if user hasn't rated yet)
-                     if (!@isDriver.ToString().ToLower()) {
+                     if (!@isDriver.ToString().ToLower() && !customerRatedDriver) {
                          showRatingModal('driver', 'Please rate your driver for this ride.');
                      }
+
+                     checkBothRated();
                  }
              });
 
              connection.on("DriverRated", function (rideId, rating) {
                  if (rideId == @Model.Id) {
+                     customerRatedDriver = true;
+
                      // Show success message for driver rating
                      showRideSuccessToast('Rating Submitted', `Driver has been rated ${rating} star${rating > 1 ? 's' : ''}!`);
 
-                     // Check if both parties have rated (only if user hasn't rated yet)
-                     if (!@isDriver.ToString().ToLower()) {
-                         checkBothRated();
+                     if (@isDriver.ToString().ToLower() && !driverRatedCustomer) {
+                         showRatingModal('user', 'Please rate your passenger for this ride.');
                      }
+
+                     checkBothRated();
                  }
              });
 
@@ -859,12 +869,11 @@
             try {
                 console.log('Start ride called for ride:', currentRideId);
 
-                const response = await fetch('/Ride/StartRide', {
+                const response = await fetch(`/api/rides/${currentRideId}/start`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: currentRideId })
+                    }
                 });
 
                 console.log('Start ride response status:', response.status);
@@ -896,12 +905,11 @@
             try {
                 console.log('Complete ride called for ride:', currentRideId);
 
-                const response = await fetch('/Ride/CompleteRide', {
+                const response = await fetch(`/api/rides/${currentRideId}/complete`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: currentRideId })
+                    }
                 });
 
                 console.log('Complete ride response status:', response.status);
@@ -929,8 +937,6 @@
         }
     }
 
-    // Remove duplicate function - use the async version below
-
         // Cancel ride function for both roles
     async function cancelRide() {
         if (confirm("Are you sure you want to cancel this ride?")) {
@@ -943,15 +949,11 @@
                      await new Promise(resolve => setTimeout(resolve, 1000));
                  }
 
-                 const response = await fetch('/Ride/CancelRide', {
+                 const response = await fetch(`/api/rides/${currentRideId}/cancel`, {
                      method: 'POST',
                      headers: {
                          'Content-Type': 'application/json',
-                     },
-                     body: JSON.stringify({
-                         id: @Model.Id,
-                         rideGroup: 'ride-@Model.Id'
-                     })
+                     }
                  });
 
                  if (response.ok) {
@@ -1282,10 +1284,11 @@
         }
 
         try {
-            const endpoint = ratingTarget === 'user' ? '/Ride/AddUserRating' : '/Ride/AddDriverRating';
+            const endpoint = ratingTarget === 'user'
+                ? `/api/rides/${currentRideId}/rate-customer`
+                : `/api/rides/${currentRideId}/rate-driver`;
             const requestBody = {
-                RideId: currentRideId,
-                Rating: currentRating
+                rating: currentRating
             };
 
             console.log('Submitting rating:', { endpoint, requestBody, currentRideId, currentRating, ratingTarget });
@@ -1339,12 +1342,11 @@
             try {
                 console.log('Driver arrived called for ride:', currentRideId);
 
-                const response = await fetch('/Ride/DriverArrived', {
+                const response = await fetch(`/api/rides/${currentRideId}/driver-arrived`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: currentRideId })
+                    }
                 });
 
                 console.log('Driver arrived response status:', response.status);
@@ -1370,38 +1372,24 @@
         }
     }
 
-    // Function to check if user has already rated
     function hasUserRated() {
-        return localStorage.getItem(`rated_${currentRideId}_${ratingTarget}`) === 'true';
+        return ratingTarget === 'user'
+            ? driverRatedCustomer
+            : customerRatedDriver;
     }
 
-    // Function to mark user as rated
     function markUserAsRated() {
-        localStorage.setItem(`rated_${currentRideId}_${ratingTarget}`, 'true');
+        if (ratingTarget === 'user') {
+            driverRatedCustomer = true;
+        } else if (ratingTarget === 'driver') {
+            customerRatedDriver = true;
+        }
     }
 
-    // Function to check if both parties have rated
     function checkBothRated() {
-        // Check if this function has already been called for this ride
-        const checkKey = `checkBothRatedCalled_${currentRideId}`;
-        if (window[checkKey]) {
-            console.log('checkBothRated already called for this ride, skipping...');
-            return;
-        }
-
-        const driverRated = localStorage.getItem(`rated_${currentRideId}_user`) === 'true';
-        const userRated = localStorage.getItem(`rated_${currentRideId}_driver`) === 'true';
-
-        console.log(`Checking ratings - Driver rated: ${driverRated}, User rated: ${userRated}`);
-
-        if (driverRated && userRated) {
-            console.log('Both parties have rated, showing back to home button');
+        if (driverRatedCustomer && customerRatedDriver) {
             showBackToHomeButton();
         }
-
-        // Mark that this function has been called for this ride
-        window[checkKey] = true;
-        console.log('checkBothRated marked as called for this ride');
     }
 
     // SignalR event listeners are now set up in setupSignalRListeners() function
@@ -1409,18 +1397,10 @@
 
     // Initialize everything when page loads
      document.addEventListener('DOMContentLoaded', async function() {
-         // Clear any existing rating data for this ride
-         localStorage.removeItem(`rated_${@Model.Id}_user`);
-         localStorage.removeItem(`rated_${@Model.Id}_driver`);
-
-
          // Check if ride is already cancelled and update UI accordingly
          const currentStatus = '@Model.Status.ToString()';
          console.log('Page loaded with ride status:', currentStatus);
 
-         // Check if we're in the middle of a rating process
-         const driverRated = localStorage.getItem(`rated_${@Model.Id}_user`) === 'true';
-         const userRated = localStorage.getItem(`rated_${@Model.Id}_driver`) === 'true';
          if (currentStatus === 'Cancelled') {
              updateRideStatusDisplay("Cancelled");
 
@@ -1435,17 +1415,17 @@
              // Show rating modal if user hasn't rated yet
              if (!@isDriver) {
                  // User should rate the driver first
-                 if (!userRated) {
+                 if (!customerRatedDriver) {
                      showRatingModal('driver', 'Please rate your driver for this ride.');
-                 } else if (driverRated) {
+                 } else if (driverRatedCustomer) {
                      // Both have rated, show back to home
                      showBackToHomeButton();
                  }
              } else {
                  // Driver should rate the user first
-                 if (!driverRated) {
+                 if (!driverRatedCustomer) {
                      showRatingModal('user', 'Please rate your passenger for this ride.');
-                 } else if (userRated) {
+                 } else if (customerRatedDriver) {
                      // Both have rated, show back to home
                      showBackToHomeButton();
                  }

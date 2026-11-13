@@ -1,8 +1,10 @@
 using System.Reflection;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Uber.Application.Abstractions.Messaging;
 using Uber.Application.Messaging;
+using Uber.Domain.Services;
 
 namespace Uber.Application;
 
@@ -38,7 +40,6 @@ public static class DependencyInjection
             }
         }
 
-        // Validate the entire scan before mutating the service collection.
         foreach (var (contract, implementation) in registrations)
         {
             var existing = services.Where(service => service.ServiceType == contract).ToArray();
@@ -51,6 +52,16 @@ public static class DependencyInjection
         }
 
         services.TryAddScoped<IMediator, Mediator>();
+
+        services.TryAddSingleton<RidePaymentService>();
+        services.TryAddSingleton<RidePricingService>();
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
+        services.TryAddScoped(
+            typeof(IPipelineBehavior<,>),
+            typeof(ValidationBehavior<,>));
+
 
         foreach (var (contract, implementation) in registrations)
         {

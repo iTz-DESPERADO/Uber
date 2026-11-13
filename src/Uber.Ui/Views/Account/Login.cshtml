@@ -1,140 +1,91 @@
-﻿@model Uber.BLL.ModelVM.Account.LoginVM
+@model Uber.Ui.Models.LoginModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Log in";
 }
-<style>
-    .login-container {
-        max-width: 400px;
-        margin: 60px auto;
-        padding: 40px;
-        background-color: #f9f9f9;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        font-family: 'Inter', sans-serif;
-    }
 
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 700;
-            color: #111;
-        }
+<div class="auth-page">
+    <section class="auth-aside">
+        <span class="auth-aside__eyebrow">Move with confidence</span>
+        <h1>Your city is closer than you think.</h1>
+        <p>Sign in to request a ride, manage your wallet, or get back on the road as a driver.</p>
+    </section>
 
-        .login-container label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #333;
-        }
+    <section class="auth-panel">
+        <div class="auth-card">
+            <header class="auth-card__header">
+                <h2>Welcome back</h2>
+                <p>Enter your details to continue to your account.</p>
+            </header>
 
-        .login-container input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-        }
+            <form asp-controller="Account" asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <input asp-for="ReturnUrl" type="hidden" />
 
-        .login-container button {
-            width: 100%;
-            background-color: #000;
-            color: #fff;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+                <div class="form-field">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control-app" autocomplete="email" placeholder="you@example.com" />
+                    <span asp-validation-for="Email"></span>
+                </div>
 
-            .login-container button:hover {
-                background-color: #222;
-            }
+                <div class="form-field">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control-app" autocomplete="current-password" placeholder="Enter your password" />
+                    <span asp-validation-for="Password"></span>
+                </div>
 
-        .login-container .forgot-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #555;
-            text-decoration: none;
-            font-size: 14px;
-        }
+                @if (!string.IsNullOrWhiteSpace(ViewBag.LoginError))
+                {
+                    <p class="field-validation-error">@ViewBag.LoginError</p>
+                }
 
-            .login-container .forgot-link:hover {
-                color: #000;
-                text-decoration: underline;
-            }
+                <div class="auth-meta">
+                    <label class="choice-card">
+                        <input asp-for="RememberMe" />
+                        <span>Keep me signed in</span>
+                    </label>
+                    <a asp-action="ForgotPassword" class="text-link">Forgot password?</a>
+                </div>
 
-    .small-error {
-        color: red;
-        font-size: 15px;
-        margin-bottom: 8px;
-        display: block;
-    }
+                <button type="submit" class="btn-app btn-app--primary btn-app--block">Log in</button>
+            </form>
 
-    .social-btn {
-        display: block;
-        padding: 10px;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: bold;
-        margin-bottom: 10px;
-        text-decoration: none;
-        background: white;
-        border: 1px solid #ccc;
-        color: #444;
-    }
-
-    .facebook-btn i {
-        color: #3b5998;
-    }
-
-    .google-btn i {
-        color: #DB4437;
-    }
-
-    .divider {
-        text-align: center;
-        margin: 20px 0;
-        color: #777;
-        font-weight: bold;
-    }
-</style>
-
-<div class="login-container">
-    <h2>Login @ViewBag.Role</h2>
-    <form asp-controller="Account" asp-action="Login" method="post">
-        <input type="hidden" name="Role" value="@ViewBag.Role" />
-        <label>Email</label>
-        <input asp-for="Email" type="email" required />
-        <label>Password</label>
-        <input asp-for="Password" type="password" required />
-        @if (!string.IsNullOrEmpty(ViewBag.LoginError))
-        {
-            <span class="small-error">@ViewBag.LoginError</span>
-        }
-        <button type="submit">Login</button>
-    </form>
-    <a asp-action="ForgotPassword" class="forgot-link">Forgot Password?</a>
-
-    <div class="divider">OR</div>
-    <form method="post" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl">
-        <div>
-            @foreach (var provider in Model.ExternalLogins)
+            <div class="auth-divider">or continue with</div>
+            @if (Model.ExternalLogins.Count > 0)
             {
-                var btnClass = provider.Name == "Facebook" ? "facebook-btn" : "google-btn";
-                var iconClass = provider.Name == "Facebook" ? "fab fa-facebook-f" : "fab fa-google";
-
-                <button type="submit" class="social-btn @btnClass"
-                        name="provider" value="@provider.Name"
-                        title="Log in using your @provider.DisplayName account">
-                    <i class="@iconClass" style="margin-right:8px;"></i> Continue with @provider.DisplayName
-                </button>
+                <form method="post" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" class="social-stack">
+                    @foreach (var provider in Model.ExternalLogins)
+                    {
+                        <button type="submit" class="btn-app btn-app--outline btn-app--block"
+                                name="provider" value="@provider.Name">
+                            <i class="@(provider.Name == "Facebook" ? "fa-brands fa-facebook" : "fa-brands fa-google")"></i>
+                            @provider.DisplayName
+                        </button>
+                    }
+                </form>
             }
-        </div>
-    </form>
+            else
+            {
+                <div class="social-stack" aria-label="External login providers">
+                    <button type="button" class="btn-app btn-app--outline btn-app--block oauth-disabled" disabled>
+                        <i class="fa-brands fa-google"></i> Continue with Google
+                        <span>Setup required</span>
+                    </button>
+                    <button type="button" class="btn-app btn-app--outline btn-app--block oauth-disabled" disabled>
+                        <i class="fa-brands fa-facebook"></i> Continue with Facebook
+                        <span>Setup required</span>
+                    </button>
+                    <p class="oauth-note"><i class="fa-solid fa-circle-info"></i> Social login becomes active after its Client ID and secret are configured.</p>
+                </div>
+            }
 
+            <p class="auth-meta" style="justify-content:center; margin-bottom:0;">
+                New to Uber?
+                <a asp-action="ChooseRegisterType" class="text-link">Create an account</a>
+            </p>
+        </div>
+    </section>
 </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

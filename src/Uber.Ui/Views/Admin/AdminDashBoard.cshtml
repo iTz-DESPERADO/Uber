@@ -1,265 +1,61 @@
-﻿@{
-    ViewData["Title"] = "AdminDashBoard";
+@{
+    ViewData["Title"] = "Admin dashboard";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+}
 
-<style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background: #fff;
-        color: #000;
-        margin: 0;
-    }
-    header {
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        background: #000;
-        color: #fff;
-        padding: 20px 50px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 30px;
-    }
-
-        .nav-left h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .nav-left a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-    .nav-right a {
-        margin-left: 20px;
-        color: #fff;
-        text-decoration: none;
-        font-weight: 500;
-    }
-
-    .nav-right .signup-btn {
-        background: #fff;
-        color: #000;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
-    }
-
-    .page-title {
-        text-align: center;
-        font-size: 40px;
-        font-weight: bold;
-        margin-top: 40px;
-        margin-bottom: 30px;
-    }
-
-    .cards-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 40px;
-        padding: 40px;
-        height: auto;
-    }
-
-    .card {
-        background: #000;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        cursor: pointer;
-        width: 250px;
-        height: 180px;
-        padding: 2rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out, background 0.25s ease-in-out;
-        text-align: center;
-        color: #fff;
-        font-size: 20px;
-        font-weight: bold;
-        gap: 10px;
-    }
-
-        .card i {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .card:hover {
-            transform: scale(1.08);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.25);
-            background: #1a1a1a;
-        }
-
-    a {
-        text-decoration: none;
-        color: inherit;
-    }
-
-    /* media (max-width: 768px) {
-        .nav-left, .nav-right
-
-    {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    header {
-        flex-direction: column;
-    }
-
-    .cards-container {
-        gap: 20px;
-        padding: 20px;
-    }
-
-    .card {
-        width: 90%;
-        height: auto;
-    }
-
-    } */
-
-    .about-us {
-        background-color: #000;
-        color: #fff;
-        padding: 40px 50px;
-        text-align: center;
-        width: 100%;
-        margin-top: auto;
-    }
-
-        .about-us h2 {
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-
-        .about-us p {
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-    .social-icons {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        flex-wrap: wrap;
-    }
-
-        .social-icons a img {
-            width: 40px;
-            height: 40px;
-            filter: brightness(0) invert(1);
-            transition: filter 0.3s ease;
-        }
-
-        .social-icons a:hover img {
-            filter: brightness(0) invert(0.6);
-        }
-   
-
-    .social-icons {
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-    }
-
-        .social-icons a img {
-            width: 50px;
-            height: 50px;
-            filter: brightness(0) invert(1);
-            transition: filter 0.3s ease;
-        }
-
-        .social-icons a:hover img {
-            filter: brightness(0) invert(0.6);
-        }
-</style>
-
-<header>
-    <div class="nav-left">
-        <h1>Uber</h1>
-        <a href="#">Ride</a>
-        <a href="#">Drive</a>
-    </div>
-    <div class="nav-right">
-        <a asp-controller="Account" asp-action="ChooseLoginType">Log in</a>
-        <a asp-controller="Account" asp-action="ChooseRegisterType" class="signup-btn">Sign up</a>
-    </div>
-</header>
-
-<div class="page-title">Admin Dashboard</div>
-
-<div class="cards-container">
-    <a href="@Url.Action("Admin_Drivers", "Admin")">
-        <div class="card">
-            <i class="fas fa-car"></i>
-            Drivers
+<section class="admin-dashboard">
+    <header class="admin-dashboard__heading">
+        <div>
+            <span class="admin-dashboard__eyebrow">Uber administration</span>
+            <h1>Operations overview</h1>
+            <p>Manage people, trips, and platform access from one place.</p>
         </div>
-    </a>
+        <span class="admin-dashboard__status"><i class="fa-solid fa-circle"></i> System online</span>
+    </header>
 
-    <a href="@Url.Action("Admin_Riders", "Admin")">
-        <div class="card">
-            <i class="fas fa-user"></i>
-            Riders
-        </div>
-    </a>
-
-    <a href="@Url.Action("Admin_Rides", "Admin")">
-        <div class="card">
-            <i class="fas fa-route"></i>
-            Rides
-        </div>
-    </a>
-
-    <a href="@Url.Action("Admin_Admins", "Admin")">
-        <div class="card">
-            <i class="fas fa-user-shield"></i>
-            Admins
-        </div>
-    </a>
-</div>
-
-
-<div class="about-us">
-    <h2>About Us</h2>
-    <p>
-        Uber is a global platform that connects riders and drivers to make transportation reliable and accessible for everyone.
-        Since our founding, we've expanded to hundreds of cities worldwide, empowering millions of people to move freely.
-        <br><br>
-        Our mission is to ignite opportunity by setting the world in motion. We believe in creating seamless and safe experiences
-        for riders, while providing flexible earning opportunities for drivers.
-    </p>
-
-    <div class="social-icons">
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Logo" />
+    <div class="admin-action-grid" aria-label="Administration sections">
+        <a asp-controller="Admin" asp-action="Admin_Drivers" class="admin-action-card">
+            <span class="admin-action-card__icon"><i class="fa-solid fa-car-side"></i></span>
+            <span class="admin-action-card__content">
+                <strong>Drivers</strong>
+                <small>Review driver accounts, vehicles, and availability.</small>
+            </span>
+            <span class="admin-action-card__arrow"><i class="fa-solid fa-arrow-right"></i></span>
         </a>
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_(2019).png" alt="Facebook Logo" />
+
+        <a asp-controller="Admin" asp-action="Admin_Riders" class="admin-action-card">
+            <span class="admin-action-card__icon"><i class="fa-solid fa-users"></i></span>
+            <span class="admin-action-card__content">
+                <strong>Riders</strong>
+                <small>View rider profiles and account information.</small>
+            </span>
+            <span class="admin-action-card__arrow"><i class="fa-solid fa-arrow-right"></i></span>
         </a>
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram Logo" />
+
+        <a asp-controller="Admin" asp-action="Admin_Rides" class="admin-action-card">
+            <span class="admin-action-card__icon"><i class="fa-solid fa-route"></i></span>
+            <span class="admin-action-card__content">
+                <strong>Rides</strong>
+                <small>Track ride requests, progress, and trip history.</small>
+            </span>
+            <span class="admin-action-card__arrow"><i class="fa-solid fa-arrow-right"></i></span>
         </a>
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg" alt="Twitter Logo" />
+
+        <a asp-controller="Admin" asp-action="Admin_Admins" class="admin-action-card">
+            <span class="admin-action-card__icon"><i class="fa-solid fa-user-shield"></i></span>
+            <span class="admin-action-card__content">
+                <strong>Administrators</strong>
+                <small>Manage the team members who can access this panel.</small>
+            </span>
+            <span class="admin-action-card__arrow"><i class="fa-solid fa-arrow-right"></i></span>
         </a>
     </div>
-</div>
+
+    <aside class="admin-dashboard__note">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div><strong>Protected admin area</strong><span>All management actions require an Administrator account.</span></div>
+    </aside>
+</section>

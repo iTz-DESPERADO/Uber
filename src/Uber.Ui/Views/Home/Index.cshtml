@@ -1,794 +1,119 @@
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Ride";
 }
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background: #fff;
-        color: #000;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-
-    header {
-        background: #000;
-        color: #fff;
-        padding: 20px 50px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 30px;
-    }
-
-    .nav-right a {
-        color: #fff;
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
-
-        .nav-right a:hover {
-            color: #1CB5A3;
-        }
-
-    .nav-right .signup-btn {
-        background: #fff;
-        color: #000;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
-        transition: background 0.3s ease, color 0.3s ease;
-    }
-
-        .nav-right .signup-btn:hover {
-            background: #1CB5A3;
-            color: #fff;
-        }
-
-    .main {
-        display: flex;
-        justify-content: space-between;
-        padding: 50px;
-        gap: 40px;
-        flex-wrap: wrap;
-    }
-
-    .form-section {
-        max-width: 400px;
-    }
-
-        .form-section h1 {
-            font-size: 40px;
-            margin-bottom: 30px;
-        }
-
-        .form-section input,
-        .form-section select,
-        .form-section button {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 5px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        .form-section button {
-            background: #000;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-            .form-section button:hover {
-                background: #1CB5A3;
-            }
-
-    .suggestions {
-        background: white;
-        border: 1px solid #ccc;
-        max-height: 150px;
-        overflow-y: auto;
-        border-radius: 8px;
-        position: relative;
-        z-index: 1000;
-        margin-top: 0;
-        margin-bottom: 15px;
-    }
-
-        .suggestions div {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-
-            .suggestions div:hover {
-                background-color: #1CB5A3;
-                color: white;
-            }
-
-    .about-us {
-        background-color: #000;
-        color: #fff;
-        padding: 20px 30px;
-        text-align: center;
-        width: 100%;
-        margin-top: auto;
-        font-size: 0.85rem;
-    }
-
-        .about-us h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        .about-us p {
-            font-size: 14px;
-            line-height: 1.4;
-            margin-bottom: 15px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-    .social-icons {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-        .social-icons a img {
-            width: 25px;
-            height: 25px;
-            filter: brightness(0) invert(1);
-            transition: filter 0.3s ease;
-        }
-
-        .social-icons a:hover img {
-            filter: brightness(0) invert(0.6);
-        }
-
-    #map {
-        width: 500px;
-        height: 500px;
-        max-width: 100%;
-        border-radius: 10px;
-    }
-
-    .quote-card {
-        display: none;
-        background: #f8f9fa;
-        border: 1px solid #e6e6e6;
-        border-radius: 10px;
-        padding: 16px;
-        margin-top: 12px;
-    }
-
-        .quote-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-        }
-
-    .quote-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-top: 8px;
-    }
-
-    .quote-metrics {
-        display: flex;
-        gap: 16px;
-        font-size: 14px;
-        color: #333;
-    }
-
-        .quote-metrics span strong {
-            color: #000;
-        }
-
-    .quote-price {
-        font-weight: 700;
-        font-size: 18px;
-    }
-
-    .request-btn {
-        width: 100%;
-        margin-top: 12px;
-        padding: 12px;
-        background: #000;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-    }
-
-        .request-btn:disabled {
-            background: #9aa0a6;
-            cursor: not-allowed;
-        }
-
-        .request-btn:hover:enabled {
-            background: #1CB5A3;
-        }
-
-        /* Payment Method Selection Styles */
-        input[type="radio"]:checked + span {
-            color: #1CB5A3;
-            font-weight: 600;
-        }
-
-        input[type="radio"]:checked {
-            accent-color: #1CB5A3;
-        }
-
-        label:has(input[type="radio"]:checked) {
-            border-color: #1CB5A3;
-            background-color: #f0f9ff;
-        }
-
-        keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-</style>
-
-<header>
-    <div class="nav-left">
-        <h1>Uber</h1>
-    </div>
-    <div class="nav-right">
-        @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("User"))
-        {
-            <a asp-controller="User" asp-action="UserProfile" title="My Profile" class="user-icon">
-                <i class="fas fa-user"></i>
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Account" asp-action="Login">Log in</a>
-            <a asp-controller="Account" asp-action="ChooseRegisterType" class="signup-btn">Sign up</a>
-        }
-    </div>
-</header>
-
-<div class="main">
-    <div class="form-section">
-        <h1>Go anywhere with Uber</h1>
-        <form id="rideForm">
-            <input type="text" id="pickup" placeholder="Pickup location" autocomplete="off" required>
-            <div id="pickup-suggestions" class="suggestions"></div>
-
-            <input type="text" id="dropoff" placeholder="Dropoff location" autocomplete="off" required>
-            <div id="dropoff-suggestions" class="suggestions"></div>
-            
-            <!-- Payment Method Selection -->
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Payment Method:</label>
-                <div style="display: flex; gap: 10px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; flex: 1; transition: all 0.3s ease;">
-                        <input type="radio" name="paymentMethod" value="Wallet" checked style="margin: 0;">
-                        <span>💳 Wallet</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; flex: 1; transition: all 0.3s ease;">
-                        <input type="radio" name="paymentMethod" value="Cash" style="margin: 0;">
-                        <span>💵 Cash</span>
-                    </label>
-                </div>
-                <div id="walletBalance" style="margin-top: 8px; padding: 8px; background-color: #e8f5e8; border-radius: 6px; border-left: 3px solid #28a745; display: none;">
-                    <small style="color: #155724;">
-                        <strong>Wallet Balance:</strong> £<span id="balanceAmount">0.00</span>
-                    </small>
-                </div>
-            </div>
-            
-            <button type="submit">See prices</button>
-        </form>
-        <div id="quote" class="quote-card">
-            <h3>Estimated trip</h3>
-            <div class="quote-row">
-                <div class="quote-metrics">
-                    <span>Distance: <strong id="distanceText">-</strong> km</span>
-                    <span>Time: <strong id="durationText">-</strong> min</span>
-                </div>
-                <div class="quote-price"><span id="priceText">-</span> £</div>
-            </div>
-            <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 6px; border-left: 3px solid #1CB5A3;">
-                <small style="color: #6c757d;">
-                    <strong>Payment Method:</strong> <span id="selectedPaymentMethod">Wallet</span><br>
-                    <span id="paymentInfo">💳 Payment will be deducted from your wallet balance</span>
-                </small>
-            </div>
-            <button id="requestNowBtn" class="request-btn" disabled>Request now</button>
-            <div id="requestStatus" style="display: none; margin-top: 10px; text-align: center;">
-                <div id="loadingSpinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #1CB5A3; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                <span id="statusText" style="margin-left: 10px; color: #1CB5A3;">Processing your request...</span>
-            </div>
+<section class="booking-page">
+    <div class="booking-intro">
+        <span class="booking-eyebrow">Uber rides</span>
+        <h1>Go anywhere with Uber.</h1>
+        <p>Choose your pickup and destination, compare the trip estimate, and request your ride in a few simple steps.</p>
+        <div class="booking-benefits" aria-label="Ride benefits">
+            <span><i class="fa-solid fa-shield-halved"></i> Safer trips</span>
+            <span><i class="fa-solid fa-location-dot"></i> Live locations</span>
+            <span><i class="fa-solid fa-receipt"></i> Clear pricing</span>
         </div>
     </div>
-    <div class="image-section">
-        <div id="map"></div>
+
+    <div class="booking-grid">
+        <section class="booking-card" aria-labelledby="booking-title">
+            <div class="booking-card__header">
+                <span class="step-label">Plan your ride</span>
+                <h2 id="booking-title">Where are you going?</h2>
+                <p>Start typing and select a location from the suggestions.</p>
+            </div>
+
+            <form id="rideForm" novalidate>
+                <div class="location-field">
+                    <label for="pickup">Pickup location</label>
+                    <div class="location-input">
+                        <span class="location-dot location-dot--pickup"></span>
+                        <input id="pickup" type="text" placeholder="Enter pickup location" autocomplete="off"
+                               aria-autocomplete="list" aria-controls="pickup-suggestions" required />
+                    </div>
+                    <div id="pickup-suggestions" class="location-suggestions" role="listbox" aria-live="polite"></div>
+                </div>
+
+                <div class="route-connector" aria-hidden="true"></div>
+
+                <div class="location-field">
+                    <label for="dropoff">Destination</label>
+                    <div class="location-input">
+                        <span class="location-dot location-dot--dropoff"></span>
+                        <input id="dropoff" type="text" placeholder="Where to?" autocomplete="off"
+                               aria-autocomplete="list" aria-controls="dropoff-suggestions" required />
+                    </div>
+                    <div id="dropoff-suggestions" class="location-suggestions" role="listbox" aria-live="polite"></div>
+                </div>
+
+                <fieldset class="payment-options">
+                    <legend>Payment method</legend>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="Wallet" checked />
+                        <span class="payment-option__icon"><i class="fa-solid fa-wallet"></i></span>
+                        <span><strong>Wallet</strong><small>Pay from your balance</small></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="Cash" />
+                        <span class="payment-option__icon"><i class="fa-solid fa-money-bill-wave"></i></span>
+                        <span><strong>Cash</strong><small>Pay after the ride</small></span>
+                    </label>
+                </fieldset>
+
+                <div id="walletBalance" class="wallet-balance" hidden>
+                    Available balance <strong>EGP <span id="balanceAmount">0.00</span></strong>
+                </div>
+
+                <p id="locationMessage" class="booking-message" role="status" hidden></p>
+                <button type="submit" class="booking-submit">
+                    <span>See trip estimate</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <section id="quote" class="trip-quote" aria-live="polite" hidden>
+                <div class="trip-quote__header">
+                    <div><span class="step-label">Your estimate</span><h3>Trip summary</h3></div>
+                    <div class="trip-price"><small>Estimated</small>EGP <span id="priceText">—</span></div>
+                </div>
+                <div class="trip-metrics">
+                    <div><i class="fa-solid fa-road"></i><span><small>Distance</small><strong><span id="distanceText">—</span> km</strong></span></div>
+                    <div><i class="fa-regular fa-clock"></i><span><small>Travel time</small><strong><span id="durationText">—</span> min</strong></span></div>
+                    <div><i class="fa-solid fa-credit-card"></i><span><small>Payment</small><strong id="selectedPaymentMethod">Wallet</strong></span></div>
+                </div>
+                <p id="paymentInfo" class="payment-info">Payment will be deducted from your wallet after the ride is completed.</p>
+                <button id="requestNowBtn" type="button" class="request-ride" disabled>Request Uber</button>
+                <div id="requestStatus" class="request-status" hidden>
+                    <span class="spinner" aria-hidden="true"></span><span id="statusText">Processing your request…</span>
+                </div>
+            </section>
+        </section>
+
+        <section class="map-card" aria-label="Ride map">
+            <div class="map-card__header">
+                <div><span class="live-indicator"></span><strong>Live trip map</strong></div>
+                <span>Powered by OpenStreetMap</span>
+            </div>
+            <div id="map"></div>
+            <div id="mapHint" class="map-hint" role="status">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Select both locations to display your route.</span>
+            </div>
+        </section>
     </div>
-</div>
+</section>
 
-<div class="about-us">
-    <h2>About Us</h2>
-    <p>
-        Uber is a global platform that connects riders and drivers to make transportation reliable and accessible for everyone.
-        Since our founding, we've expanded to hundreds of cities worldwide, empowering millions of people to move freely.
-        <br><br>
-        Our mission is to ignite opportunity by setting the world in motion. We believe in creating seamless and safe experiences
-        for riders, while providing flexible earning opportunities for drivers.
-    </p>
+<section class="service-strip" aria-label="Uber service highlights">
+    <div><i class="fa-solid fa-bolt"></i><span><strong>Fast matching</strong><small>Find nearby available drivers</small></span></div>
+    <div><i class="fa-solid fa-map-location-dot"></i><span><strong>Live progress</strong><small>Follow every stage of your ride</small></span></div>
+    <div><i class="fa-solid fa-lock"></i><span><strong>Secure account</strong><small>Your ride information stays protected</small></span></div>
+</section>
 
-    <div class="social-icons">
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Logo" />
-        </a>
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_(2019).png" alt="Facebook Logo" />
-        </a>
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram Logo" />
-        </a>
-        <a href="">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg" alt="Twitter Logo" />
-        </a>
-    </div>
-</div>
-
-<script>
-        var map = L.map('map').setView([30.0444, 31.2357], 13);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        var pickupMarker, dropoffMarker, routeLine, carMarker;
-        var lastStart = null, lastEnd = null;
-        const quoteDiv = document.getElementById('quote');
-        const distanceText = document.getElementById('distanceText');
-        const durationText = document.getElementById('durationText');
-        const priceText = document.getElementById('priceText');
-        const requestNowBtn = document.getElementById('requestNowBtn');
-
-        function updateQuote(routeDistance, routeDuration) {
-            storedDistance = Number(routeDistance);
-            storedDuration = Number(routeDuration);
-            storedPrice = (storedDistance * 7) + (storedDuration * 1.5) + 7;
-            const requestNowBtn = document.getElementById('requestNowBtn');
-
-            distanceText.textContent = storedDistance;
-            durationText.textContent = storedDuration;
-            priceText.textContent = storedPrice.toFixed(2);
-            quoteDiv.style.display = 'block';
-            requestNowBtn.disabled = !(lastStart && lastEnd);
-        }
-
-        function geocode(address) {
-            return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-                    }
-                    return null;
-                });
-        }
-
-        function getRoute(start, end) {
-            return fetch(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`)
-                .then(res => res.json())
-                .then(data => {
-                    let route = data.routes[0];
-                    let path = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-
-                    let routeDistance = (route.distance / 1000).toFixed(2);
-
-                    let routeDuration = (route.duration / 60).toFixed(1);
-
-                    return { path, routeDistance, routeDuration };
-                });
-        }
-
-        let storedDistance = null;
-        let storedDuration = null;
-        let storedPrice = null;
-
-        document.getElementById('rideForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            var pickupAddress = document.getElementById('pickup').value;
-            var dropoffAddress = document.getElementById('dropoff').value;
-
-            var pickupCoords = await geocode(pickupAddress);
-            var dropoffCoords = await geocode(dropoffAddress);
-
-            if (!pickupCoords || !dropoffCoords) {
-                alert("One of the locations could not be found!");
-                return;
-            }
-
-            if (pickupMarker) map.removeLayer(pickupMarker);
-            if (dropoffMarker) map.removeLayer(dropoffMarker);
-            if (routeLine) map.removeLayer(routeLine);
-
-            pickupMarker = L.marker(pickupCoords).addTo(map).bindPopup("Pickup");
-            dropoffMarker = L.marker(dropoffCoords).addTo(map).bindPopup("Dropoff");
-
-            var result = await getRoute(pickupCoords, dropoffCoords);
-
-            routeLine = L.polyline(result.path, { color: 'blue', weight: 4 }).addTo(map);
-            map.fitBounds(routeLine.getBounds());
-
-            lastStart = pickupCoords;
-            lastEnd = dropoffCoords;
-            updateQuote(result.routeDistance, result.routeDuration);
-        });
-
-        async function tryDrawRoute() {
-            if (pickupMarker && dropoffMarker) {
-                let pickupCoords = pickupMarker.getLatLng();
-                let dropoffCoords = dropoffMarker.getLatLng();
-
-                if (routeLine) map.removeLayer(routeLine);
-
-                let result = await getRoute([pickupCoords.lat, pickupCoords.lng], [dropoffCoords.lat, dropoffCoords.lng]);
-
-                routeLine = L.polyline(result.path, { color: 'blue', weight: 4 }).addTo(map);
-                map.fitBounds(routeLine.getBounds());
-
-                lastStart = [pickupCoords.lat, pickupCoords.lng];
-                lastEnd = [dropoffCoords.lat, dropoffCoords.lng];
-                updateQuote(result.routeDistance, result.routeDuration);
-
-            }
-        }
-
-        const pickupInput = document.getElementById('pickup');
-        const pickupSuggestions = document.getElementById('pickup-suggestions');
-
-        const dropoffInput = document.getElementById('dropoff');
-        const dropoffSuggestions = document.getElementById('dropoff-suggestions');
-
-        async function fetchSuggestions(query) {
-            if (query.length < 3) return [];
-
-            const viewbox = "22.0,31.7,35.9,20.0";
-
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&viewbox=${viewbox}&bounded=1&email=22gogledrive22@gmail.com`;
-            const res = await fetch(url);
-            if (!res.ok) return [];
-            const data = await res.json();
-            return data;
-        }
-
-        function showSuggestions(inputElem, suggestionsElem, places, markerType) {
-            suggestionsElem.innerHTML = '';
-            places.forEach(place => {
-                const div = document.createElement('div');
-                div.textContent = place.display_name;
-                div.addEventListener('click', () => {
-                    inputElem.value = place.display_name;
-                    suggestionsElem.innerHTML = '';
-
-                    const coords = [parseFloat(place.lat), parseFloat(place.lon)];
-
-                    if (markerType === 'pickup') {
-                        if (pickupMarker) map.removeLayer(pickupMarker);
-                        pickupMarker = L.marker(coords).addTo(map).bindPopup("Pickup").openPopup();
-                    } else if (markerType === 'dropoff') {
-                        if (dropoffMarker) map.removeLayer(dropoffMarker);
-                        dropoffMarker = L.marker(coords).addTo(map).bindPopup("Dropoff").openPopup();
-                    }
-
-                    map.setView(coords, 13);
-                    tryDrawRoute();
-                });
-                suggestionsElem.appendChild(div);
-            });
-        }
-
-        pickupInput.addEventListener('input', async () => {
-            const query = pickupInput.value.trim();
-            const places = await fetchSuggestions(query);
-            showSuggestions(pickupInput, pickupSuggestions, places, 'pickup');
-        });
-
-        dropoffInput.addEventListener('input', async () => {
-            const query = dropoffInput.value.trim();
-            const places = await fetchSuggestions(query);
-            showSuggestions(dropoffInput, dropoffSuggestions, places, 'dropoff');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!pickupInput.contains(e.target) && !pickupSuggestions.contains(e.target)) {
-                pickupSuggestions.innerHTML = '';
-            }
-            if (!dropoffInput.contains(e.target) && !dropoffSuggestions.contains(e.target)) {
-                dropoffSuggestions.innerHTML = '';
-            }
-        });
-
-        document.getElementById('pickup').addEventListener('change', async function () {
-            let address = this.value.trim();
-            if (address === "") return;
-
-            let coords = await geocode(address);
-            if (!coords) {
-                alert("Pickup location not found!");
-                return;
-            }
-            if (pickupMarker) map.removeLayer(pickupMarker);
-            pickupMarker = L.marker(coords).addTo(map).bindPopup("Pickup");
-            map.setView(coords, 13);
-
-            tryDrawRoute();
-        });
-
-        document.getElementById('dropoff').addEventListener('change', async function () {
-            let address = this.value.trim();
-            if (address === "") return;
-
-            let coords = await geocode(address);
-            if (!coords) {
-                alert("Dropoff location not found!");
-                return;
-            }
-            if (dropoffMarker) map.removeLayer(dropoffMarker);
-            dropoffMarker = L.marker(coords).addTo(map).bindPopup("Dropoff");
-            map.setView(coords, 13);
-
-            tryDrawRoute();
-        });
-
-        requestNowBtn.addEventListener('click', async function () {
-            // Check if user is authenticated
-            if (!(await isUserAuthenticated())) {
-                alert('Please log in to request a ride');
-                window.location.href = '/Account/ChooseLoginType';
-                return;
-            }
-
-            // Check if user has sufficient balance for wallet payment
-            const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-            if (selectedPaymentMethod === 'Wallet') {
-                const userBalance = await getUserBalance();
-                if (userBalance < storedPrice) {
-                    alert(`Insufficient wallet balance. You have £${userBalance.toFixed(2)} but the ride costs £${storedPrice.toFixed(2)}. Please add funds to your wallet or select cash payment.`);
-                    return;
-                }
-            }
-
-            // Check if we have valid coordinates and route
-            if (!lastStart || !lastEnd || !storedDistance || !storedDuration || !storedPrice) {
-                alert('Please select valid pickup and dropoff locations first');
-                return;
-            }
-
-            // Validate coordinates are reasonable (within Egypt bounds)
-            if (lastStart[0] < 20 || lastStart[0] > 35 || lastStart[1] < 20 || lastStart[1] > 40 ||
-                lastEnd[0] < 20 || lastEnd[0] > 35 || lastEnd[1] < 20 || lastEnd[1] > 40) {
-                alert('Please select locations within Egypt');
-                return;
-            }
-
-            // Validate distance and duration are reasonable
-            if (storedDistance <= 0 || storedDistance > 1000 || storedDuration <= 0 || storedDuration > 300) {
-                alert('Please select valid pickup and dropoff locations');
-                return;
-            }
-
-            try {
-                // Show loading state
-                requestNowBtn.disabled = true;
-                requestNowBtn.textContent = 'Processing...';
-                
-                // Show loading status
-                const requestStatus = document.getElementById('requestStatus');
-                const statusText = document.getElementById('statusText');
-                requestStatus.style.display = 'block';
-                statusText.textContent = 'Finding nearest driver...';
-                
-                // Update status during the process
-                setTimeout(() => {
-                    if (statusText.textContent === 'Finding nearest driver...') {
-                        statusText.textContent = 'Creating ride request...';
-                    }
-                }, 2000);
-
-                // Get selected payment method
-                const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                
-                // Create the ride request
-                const response = await fetch('/Ride/RequestRide', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        startLat: lastStart[0],
-                        startLng: lastStart[1],
-                        endLat: lastEnd[0],
-                        endLng: lastEnd[1],
-                        distance: storedDistance,
-                        duration: storedDuration,
-                        price: storedPrice,
-                        paymentMethod: selectedPaymentMethod
-                    })
-                });
-
-                if (response.ok) {
-                    // Get the ride ID from the response
-                    const rideData = await response.json();
-                    statusText.textContent = 'Ride request successful! Redirecting...';
-                    
-                    if (rideData.rideId) {
-                        // Redirect to waiting page with ride ID
-                        setTimeout(() => {
-                            window.location.href = `/Ride/WaitingForDriver/${rideData.rideId}`;
-                        }, 1000);
-                    } else {
-                        // Fallback to the old way
-                        setTimeout(() => {
-                            window.location.href = '/Ride/WaitingForDriver';
-                        }, 1000);
-                    }
-                } else {
-                    const errorData = await response.json();
-                    statusText.textContent = 'Error: ' + (errorData.message || 'Unknown error');
-                    statusText.style.color = '#dc3545';
-                    
-                    // Reset button state
-                    requestNowBtn.disabled = false;
-                    requestNowBtn.textContent = 'Request now';
-                    
-                    // Hide loading status after 3 seconds
-                    setTimeout(() => {
-                        requestStatus.style.display = 'none';
-                        statusText.style.color = '#1CB5A3';
-                    }, 3000);
-                }
-            } catch (error) {
-                console.error('Error requesting ride:', error);
-                statusText.textContent = 'An error occurred. Please try again.';
-                statusText.style.color = '#dc3545';
-                
-                // Reset button state
-                requestNowBtn.disabled = false;
-                requestNowBtn.textContent = 'Request now';
-                
-                // Hide loading status after 3 seconds
-                setTimeout(() => {
-                    requestStatus.style.display = 'none';
-                    statusText.style.color = '#1CB5A3';
-                }, 3000);
-            }
-        });
-
-        // Function to check if user is authenticated
-        async function isUserAuthenticated() {
-            try {
-                // Try to make a request to a protected endpoint to check authentication
-                const response = await fetch('/Ride/RequestRide', {
-                    method: 'GET', 
-                    credentials: 'same-origin'
-                });
-                
-                // If we get 401, user is not authenticated
-                if (response.status === 401) {
-                    return false;
-                }
-                
-                // If we get 200 or 400 (but not 401), user is authenticated
-                return true;
-            } catch (error) {
-                console.error('Error checking authentication:', error);
-                return false;
-            }
-        }
-
-        // Add event listeners for payment method selection
-        document.addEventListener('DOMContentLoaded', function() {
-            const paymentMethodInputs = document.querySelectorAll('input[name="paymentMethod"]');
-            
-            paymentMethodInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    // Remove active class from all labels
-                    document.querySelectorAll('label:has(input[name="paymentMethod"])').forEach(label => {
-                        label.style.borderColor = '#e0e0e0';
-                        label.style.backgroundColor = 'transparent';
-                    });
-                    
-                    // Add active class to selected label
-                    if (this.checked) {
-                        const selectedLabel = this.closest('label');
-                        selectedLabel.style.borderColor = '#1CB5A3';
-                        selectedLabel.style.backgroundColor = '#f0f9ff';
-                    }
-                    
-                    // Update payment method display
-                    updatePaymentMethodDisplay(this.value);
-                });
-            });
-
-            // Initialize payment method display for default selection (Wallet)
-            const defaultPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-            if (defaultPaymentMethod) {
-                updatePaymentMethodDisplay(defaultPaymentMethod.value);
-            }
-        });
-
-        // Function to update payment method display
-        function updatePaymentMethodDisplay(paymentMethod) {
-            const selectedPaymentMethod = document.getElementById('selectedPaymentMethod');
-            const paymentInfo = document.getElementById('paymentInfo');
-            const walletBalance = document.getElementById('walletBalance');
-            
-            if (selectedPaymentMethod && paymentInfo) {
-                selectedPaymentMethod.textContent = paymentMethod;
-                
-                if (paymentMethod === 'Wallet') {
-                    paymentInfo.innerHTML = '💳 Payment will be deducted from your wallet balance';
-                    // Show wallet balance
-                    if (walletBalance) {
-                        walletBalance.style.display = 'block';
-                        loadWalletBalance();
-                    }
-                } else if (paymentMethod === 'Cash') {
-                    paymentInfo.innerHTML = '💵 Payment will be collected in cash after the ride';
-                    // Hide wallet balance
-                    if (walletBalance) {
-                        walletBalance.style.display = 'none';
-                    }
-                }
-            }
-        }
-
-        // Function to load and display wallet balance
-        async function loadWalletBalance() {
-            try {
-                const balance = await getUserBalance();
-                const balanceAmount = document.getElementById('balanceAmount');
-                if (balanceAmount) {
-                    balanceAmount.textContent = balance.toFixed(2);
-                }
-            } catch (error) {
-                console.error('Error loading wallet balance:', error);
-            }
-        }
-
-        // Function to get user's wallet balance
-        async function getUserBalance() {
-            try {
-                const response = await fetch('/User/GetBalance');
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.balance || 0;
-                } else {
-                    console.error('Failed to get user balance:', response.status);
-                    return 0;
-                }
-            } catch (error) {
-                console.error('Error getting user balance:', error);
-                return 0;
-            }
-        }
-</script>
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="~/js/home.js" asp-append-version="true"></script>
+}

@@ -1,5 +1,5 @@
 
-@model IEnumerable<Uber.BLL.ModelVM.Ride.RideVM>
+@model IEnumerable<Uber.Application.Rides.GetRides.RideListItem>
 @{
     ViewData["Title"] = "Rides Management";
 }
@@ -88,15 +88,9 @@
 
 
 
-<header>
-    <div class="nav-left">
-        <h1>Uber</h1>
-    </div>
-</header>
-
 <div class="page-title">Rides Management</div>
 
-<table id="Admins" class="display">
+<table id="Rides" class="display">
     <thead class="thead-dark">
       <tr>
             <th>ID</th>
@@ -114,11 +108,11 @@
                 @foreach (var ride in Model)
             {
                 <tr>
-                <td>@ride.ID</td>
+                <td>@ride.Id</td>
                 <td>@ride.DriverName</td>
-                <td>@ride.RiderName</td>
+                <td>@ride.UserName</td>
 
-                <td>@('$' + ride.Price.ToString("F2"))</td>
+                <td>EGP @ride.Price.GetValueOrDefault().ToString("F2")</td>
                 <td>@ride.CreatedAt.ToString()</td>
                 <td>@(ride.Duration + " Min")</td>
                 <td>@(ride.Distance + "Km")</td>

@@ -1,0 +1,127 @@
+.auth-page--register {
+  grid-template-columns: minmax(340px, .75fr) minmax(620px, 1.25fr);
+  align-items: stretch;
+}
+
+.auth-page--register .auth-aside {
+  justify-content: flex-start;
+  padding-top: clamp(4rem, 9vw, 8rem);
+}
+
+.auth-page--register .auth-panel {
+  min-width: 0;
+  align-items: flex-start;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.auth-page--register .registration-card {
+  max-width: 900px;
+  margin-block: 0;
+}
+
+.registration-form .form-grid {
+  gap: 1rem 1.25rem;
+}
+
+.registration-form .form-field {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.registration-form .form-control-app {
+  min-width: 0;
+}
+
+.registration-section-title {
+  display: block;
+  margin-top: .35rem;
+  padding: 1rem 0 .25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.registration-section-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.registration-section-title span {
+  display: block;
+  color: #111;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.registration-section-title p {
+  margin: .25rem 0 0;
+  color: var(--color-muted);
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.registration-form > .btn-app {
+  margin-top: 1.35rem;
+}
+
+.registration-form .auth-meta {
+  flex-wrap: wrap;
+  margin-top: 1rem !important;
+}
+
+.auth-page--driver .choice-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.auth-page--driver input[type="file"] {
+  min-height: 54px;
+  padding: .55rem;
+}
+
+@media (max-width: 1100px) {
+  .auth-page--register {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-page--register .auth-aside {
+    min-height: 270px;
+    justify-content: center;
+    padding: 3rem clamp(1.25rem, 6vw, 4rem);
+  }
+
+  .auth-page--register .auth-aside h1 {
+    max-width: 760px;
+    font-size: clamp(2.3rem, 7vw, 4rem);
+  }
+
+  .auth-page--register .auth-panel {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .auth-page--register .auth-aside {
+    min-height: 230px;
+  }
+
+  .auth-page--register .auth-panel {
+    padding: .75rem;
+  }
+
+  .auth-page--register .registration-card {
+    padding: 1.15rem;
+    border-radius: 1rem;
+  }
+
+  .registration-form .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-form .form-field--full {
+    grid-column: auto;
+  }
+
+  .auth-page--driver .choice-grid,
+  .auth-page--rider .choice-grid {
+    grid-template-columns: 1fr;
+  }
+}

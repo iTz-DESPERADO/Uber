@@ -1,17 +1,18 @@
-# Result Pattern: step 02
-
-Branch: `codex/step-02-result-pattern`, based on foundation commit `3a6d923`.
+# Result Pattern
 
 The contracts live in `Uber.Domain.Common` so domain rules and application
 handlers can share them without referencing web, persistence or third-party
-packages. Existing services, controllers and repository return types are
-unchanged. Adoption happens one feature at a time in later branches.
+packages. Domain behavior and Application handlers use the contracts throughout
+the migrated vertical slices.
 
 ## Contract
 
-- `Error` is an immutable value with a required, nonblank `Code` and `Message`.
+- `Error` is an immutable value with a required, nonblank `Code` and a non-null `Message`.
   Codes identify failures independently of message text; messages are preserved
-  exactly as supplied. No HTTP status codes belong here.
+  exactly as supplied, including empty or whitespace exception text. The code
+  identifies the failure unambiguously. Repositories do not return Result;
+  entities and application handlers use it for business outcomes.
+  No HTTP status codes belong here.
 - `Result.Success()` has `IsSuccess == true` and `Error == null`.
 - `Result.Failure(error)` requires a non-null error and has `IsFailure == true`.
 - `Result<T>.Success(value)` carries the supplied value, including zero, false
@@ -34,10 +35,19 @@ if (result.IsSuccess)
 }
 ```
 
-During feature migration, preserve the original meaning of not-found, error
-messages and external responses. Do not mechanically turn every null into an
-error or catch every exception into a Result. Expected business failures use
-these contracts; exception handling and HTTP mapping remain boundary concerns.
+Repositories return entities, nullable absence, or collections and let
+persistence failures throw. Domain methods and Application handlers return
+Result for expected business outcomes. Minimal API endpoints translate failed
+results into HTTP problem responses. The global exception handler owns technical
+exception, concurrency, and unique-index mapping.
+
+Do not mechanically turn every null into an error or catch every exception into
+a Result. A missing repository row becomes a use-case error in its handler;
+unexpected database, network, and programming failures remain exceptions.
+
+Validation runs in the mediator pipeline and creates a failed response matching
+the request's `Result` or `Result<T>` shape. Infrastructure does not reference
+Result solely to describe persistence success.
 
 ## Verification
 
@@ -45,6 +55,6 @@ these contracts; exception handling and HTTP mapping remain boundary concerns.
 checks success/failure invariants, error identity and equality, invalid error
 arguments, default and nullable values, and guarded access to failed values.
 
-`dotnet build Uber.sln --no-restore --nologo -v quiet -m:1`
-checks compatibility with the existing application. No database or external
-services are required by the contract tests.
+`dotnet build Uber.sln --no-restore --nologo -v quiet -m:1` checks compatibility
+with the application. Database-backed workflow verification additionally
+requires applying the Infrastructure migrations.

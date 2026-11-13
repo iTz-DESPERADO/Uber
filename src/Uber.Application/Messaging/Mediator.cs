@@ -10,8 +10,6 @@ internal sealed class Mediator(IServiceProvider services) : IMediator
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Only the stateless adapter uses reflection. Handlers and behaviors are
-        // resolved from the caller's scope, never cached or invoked by reflection.
         var executorType = typeof(RequestExecutor<,>).MakeGenericType(request.GetType(), typeof(TResponse));
         var executor = (RequestExecutor<TResponse>)Activator.CreateInstance(executorType)!;
         return executor.Execute(request, services, cancellationToken);
@@ -38,7 +36,6 @@ internal sealed class RequestExecutor<TRequest, TResponse> : RequestExecutor<TRe
                 .HandleAsync(typedRequest, cancellationToken);
         };
 
-        // The first registered behavior is the outermost behavior.
         foreach (var behavior in services.GetServices<IPipelineBehavior<TRequest, TResponse>>().Reverse())
         {
             var continuation = next;

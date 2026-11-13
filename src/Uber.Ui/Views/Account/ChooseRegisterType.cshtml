@@ -1,44 +1,30 @@
-﻿@{
-    ViewData["Title"] = "Register Type";
+@{
+    ViewData["Title"] = "Create account";
 }
 
-<style>
-    .choose-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 80vh;
-        font-family: 'Inter', sans-serif;
-    }
-
-        .choose-container h2 {
-            margin-bottom: 30px;
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-    .choose-options a {
-        display: inline-block;
-        background-color: black;
-        color: white;
-        text-decoration: none;
-        padding: 15px 30px;
-        border-radius: 8px;
-        font-size: 18px;
-        margin: 10px;
-        transition: background-color 0.3s ease;
-    }
-
-        .choose-options a:hover {
-            background-color: #333;
-        }
-</style>
-
-<div class="choose-container">
-    <h2>Register as</h2>
-    <div class="choose-options">
-        <a asp-controller="Account" asp-action="Register" asp-route-role="User">Rider</a>
-        <a asp-controller="Account" asp-action="Register" asp-route-role="Driver">Driver</a>
-    </div>
+<div class="auth-page">
+    <section class="auth-aside">
+        <span class="auth-aside__eyebrow">Start your journey</span>
+        <h1>Ride your way. Drive on your terms.</h1>
+        <p>Choose the account that fits you today. You can always contact support if your needs change.</p>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <header class="auth-card__header">
+                <h2>How will you use Uber?</h2>
+                <p>Select an option to create the right account.</p>
+            </header>
+            <div class="role-options">
+                <a asp-controller="Account" asp-action="Register" asp-route-role="User" class="role-card">
+                    <span class="role-icon"><i class="fa-solid fa-location-dot"></i></span>
+                    <div><h3>Ride with us</h3><p>Book rides, track your driver, and manage payments.</p></div>
+                </a>
+                <a asp-controller="Account" asp-action="Register" asp-route-role="Driver" class="role-card">
+                    <span class="role-icon"><i class="fa-solid fa-car"></i></span>
+                    <div><h3>Drive with us</h3><p>Receive trip requests and grow your earnings.</p></div>
+                </a>
+            </div>
+            <p class="auth-meta" style="justify-content:center; margin-bottom:0;">Already registered? <a asp-action="Login" class="text-link">Log in</a></p>
+        </div>
+    </section>
 </div>

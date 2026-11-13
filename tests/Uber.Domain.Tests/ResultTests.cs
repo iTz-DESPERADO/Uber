@@ -86,13 +86,20 @@ public sealed class ResultTests
         Assert.ThrowsAny<ArgumentException>(() => new Error(code!, "Ride not found"));
     }
 
+    [Fact]
+    public void Error_rejects_null_message()
+    {
+        Assert.Throws<ArgumentNullException>(() => new Error("Ride.NotFound", null!));
+    }
+
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Error_requires_a_message(string? message)
+    public void Error_preserves_blank_legacy_messages(string message)
     {
-        Assert.ThrowsAny<ArgumentException>(() => new Error("Ride.NotFound", message!));
+        var result = Result.Failure(new Error("Ride.UpdateFailed", message));
+        Assert.True(result.IsFailure);
+        Assert.Equal(message, result.Error!.Message);
     }
 
     [Fact]

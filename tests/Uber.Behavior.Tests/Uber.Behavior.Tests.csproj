@@ -13,10 +13,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Moq" Version="4.21.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Uber.Ui\Uber.Ui.csproj" />
+    <ProjectReference Include="..\..\src\Uber.Infrastructure\Uber.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Baselines\schema-before-domain.sql" CopyToOutputDirectory="PreserveNewest" />

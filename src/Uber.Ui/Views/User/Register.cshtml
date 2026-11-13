@@ -1,157 +1,76 @@
+@model Uber.Ui.Models.CreateUserModel
 @{
-    ViewData["Title"] = "Register as Rider";
+    ViewData["Title"] = "Create rider account";
 }
 
-@model Uber.BLL.ModelVM.User.CreateUser
+@section Styles {
+    <link rel="stylesheet" href="~/css/registration.css" asp-append-version="true" />
+}
 
-
-
-<style>
-    .register-container {
-        max-width: 500px;
-        margin: 60px auto;
-        padding: 40px;
-        background-color: #f9f9f9;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        font-family: 'Inter', sans-serif;
-    }
-
-        .register-container h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 700;
-            color: #111;
-        }
-
-        .register-container label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .register-container input[type="text"],
-        .register-container input[type="email"],
-        .register-container input[type="password"],
-        .register-container input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .register-container .car-type-options label {
-            display: inline-block;
-            margin-right: 15px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .register-container button {
-            width: 100%;
-            background-color: #000;
-            color: #fff;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-            .register-container button:hover {
-                background-color: #222;
-            }
-
-
-    .phone-container {
-        display: flex;
-        align-items: center;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        overflow: hidden;
-        max-width: 250px;
-        font-family: sans-serif;
-    }
-
-    .phone-prefix {
-        background: #f9f9f9;
-        display: flex;
-        align-items: center;
-        padding: 0 8px;
-        font-weight: bold;
-        user-select: none;
-        white-space: nowrap;
-    }
-
-        .phone-prefix img {
-            width: 20px;
-            height: auto;
-            margin-right: 6px;
-        }
-
-    .phone-input {
-        border: none;
-        padding: 8px;
-        outline: none;
-        flex: 1;
-        font-size: 14px;
-    }
-</style>
-
-
-
-<div class="register-container">
-    <h2>Register as Rider</h2>
-    <form asp-controller ="User" asp-action="RegisterUser" method="post">
-        <label>Name</label>
-        <input asp-for="Name" type="text" required />
-
-        <label>Email</label>
-        <input asp-for="Email" type="email" required />
-
-        <div class="phone-container">
-            <div class="phone-prefix">
-                <img src="https://flagcdn.com/w20/eg.png" alt="Egypt Flag">
-                +20
-            </div>
-            <input asp-for="PhoneNumber" id="phone" class="phone-input" type="tel"
-                   inputmode="numeric"
-                   pattern="^0(10|11|12|15)\d{8}$"
-                   placeholder="01012345678" maxlength="11" required>
+<div class="auth-page auth-page--register auth-page--rider">
+    <section class="auth-aside">
+        <span class="auth-aside__eyebrow">Ride with Uber</span>
+        <h1>A better ride is only a few details away.</h1>
+        <p>Create your rider account to request trips, follow progress in real time, and keep payments in one place.</p>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card auth-card--wide registration-card">
+            <header class="auth-card__header">
+                <h2>Create rider account</h2>
+                <p>Use accurate details so your driver can reach you when needed.</p>
+            </header>
+            <form action="/api/auth/register/user" method="post" class="registration-form">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+                <div class="form-grid">
+                    <div class="registration-section-title form-field--full">
+                        <span>Personal details</span>
+                        <p>Information your driver will use to identify and contact you.</p>
+                    </div>
+                    <div class="form-field form-field--full">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control-app" autocomplete="name" placeholder="Your full name" />
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                    <div class="form-field">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control-app" autocomplete="email" placeholder="you@example.com" />
+                        <span asp-validation-for="Email"></span>
+                    </div>
+                    <div class="form-field">
+                        <label asp-for="PhoneNumber" class="form-label">Phone number</label>
+                        <input asp-for="PhoneNumber" id="phone" class="form-control-app" type="tel" inputmode="numeric"
+                               pattern="^0(10|11|12|15)\d{8}$" placeholder="01012345678" maxlength="11" />
+                        <span asp-validation-for="PhoneNumber"></span>
+                    </div>
+                    <div class="form-field">
+                        <label asp-for="DateOfBirth" class="form-label">Date of birth</label>
+                        <input asp-for="DateOfBirth" class="form-control-app" type="date" min="1925-01-01" max="2007-12-31" />
+                    </div>
+                    <div class="form-field">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control-app" autocomplete="new-password" placeholder="At least 6 characters" />
+                        <span asp-validation-for="Password"></span>
+                    </div>
+                    <div class="form-field form-field--full">
+                        <span class="form-label">Gender</span>
+                        <div class="choice-grid">
+                            <label class="choice-card"><input asp-for="Gender" type="radio" value="Male" /> <span>Male</span></label>
+                            <label class="choice-card"><input asp-for="Gender" type="radio" value="Female" /> <span>Female</span></label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-app btn-app--primary btn-app--block">Create rider account</button>
+                <p class="auth-meta" style="justify-content:center; margin-bottom:0;">Already registered? <a asp-controller="Account" asp-action="Login" class="text-link">Log in</a></p>
+            </form>
         </div>
-
-
-        <label>Gender</label>
-        <div class="car-type-options">
-            <label><input asp-for="Gender" type="radio" value="Male" required />Male</label>
-            <label><input asp-for="Gender" type="radio" value="Female" />Female</label>
-        </div>
-
-
-        <label>Date of Birth</label>
-        <input asp-for="DateOfBirth" type="date" min="1925-01-01" max="2007-12-31" required>
-
-
-        <label>Password</label>
-        <input asp-for="Password" type="password" minlength="6" required />
-
-
-        <button type="submit">Register</button>
-    </form>
+    </section>
 </div>
 
-
-
-<script>
-    const phoneInput = document.getElementById('phone');
-
-    // Prevent non-digit input
-    phoneInput.addEventListener('input', () => {
-        phoneInput.value = phoneInput.value.replace(/\D/g, '');
-    });
-</script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const phoneInput = document.getElementById('phone');
+        phoneInput?.addEventListener('input', () => phoneInput.value = phoneInput.value.replace(/\D/g, ''));
+    </script>
+}

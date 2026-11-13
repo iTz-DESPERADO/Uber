@@ -1,44 +1,20 @@
-﻿@{
-    ViewData["Title"] = "Login Type";
+@{
+    ViewData["Title"] = "Choose account";
 }
 
-<style>
-    .choose-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 80vh;
-        font-family: 'Inter', sans-serif;
-    }
-
-        .choose-container h2 {
-            margin-bottom: 30px;
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-    .choose-options a {
-        display: inline-block;
-        background-color: black;
-        color: white;
-        text-decoration: none;
-        padding: 15px 30px;
-        border-radius: 8px;
-        font-size: 18px;
-        margin: 10px;
-        transition: background-color 0.3s ease;
-    }
-
-        .choose-options a:hover {
-            background-color: #333;
-        }
-</style>
-
-<div class="choose-container">
-    <h2>Login as</h2>
-    <div class="choose-options">
-        <a asp-controller="Account" asp-action="Login" asp-route-role="User">Rider</a>
-        <a asp-controller="Account" asp-action="Login" asp-route-role="Driver">Driver</a>
-    </div>
+<div class="auth-page">
+    <section class="auth-aside">
+        <span class="auth-aside__eyebrow">One platform</span>
+        <h1>Where are you headed today?</h1>
+        <p>Riders and drivers use one secure sign-in. We’ll take you to the right experience automatically.</p>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <header class="auth-card__header">
+                <h2>Continue to Uber</h2>
+                <p>Use your email or a connected account to sign in.</p>
+            </header>
+            <a asp-controller="Account" asp-action="Login" class="btn-app btn-app--primary btn-app--block">Continue to login</a>
+        </div>
+    </section>
 </div>

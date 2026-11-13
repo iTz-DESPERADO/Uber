@@ -1,4 +1,4 @@
-@model Uber.DAL.Entities.Driver
+@model Uber.Application.Drivers.DriverProfileResponse
 @{
     ViewData["Title"] = "Edit Driver";
 }
@@ -366,7 +366,7 @@
             <a asp-controller="Admin" asp-action="Admin_Drivers">Drivers</a>
             <a asp-controller="Admin" asp-action="Admin_Riders">Riders</a>
             <a asp-controller="Admin" asp-action="Admin_Rides">Rides</a>
-            <a asp-controller="Admin" asp-action="Admin_Admines">Admins</a>
+            <a asp-controller="Admin" asp-action="Admin_Admins">Admins</a>
         </div>
     </div>
 </div>
@@ -378,24 +378,10 @@
     </div>
 
     <div class="form-body">
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">
-                ✅ @TempData["SuccessMessage"]
-            </div>
-        }
-
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger">
-                ❌ @TempData["ErrorMessage"]
-            </div>
-        }
-
-        <form asp-controller="Admin" asp-action="EditDriver" method="post" enctype="multipart/form-data">
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="CreatedAt" />
-            <input type="hidden" asp-for="IsDeleted" />
+        <form id="editDriverForm">
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <input type="hidden" name="Gender" value="@((int)Model.Gender)" />
+            <input type="hidden" name="IsDeleted" value="@Model.IsDeleted" />
 
             <div class="current-photo">
                 <img src="@(string.IsNullOrEmpty(Model.ImagePath) ? "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiM2Yzc1N2QiLz4KPHN2ZyB4PSIxNSIgeT0iMjAiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgdmlld0JveD0iMCAwIDMwIDMwIiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTE1IDIwQzE3Ljc2MTQgMjAgMjAgMjIuMjM4NiAyMCAyNVYyN0MyMCAyOS43NjE0IDE3Ljc2MTQgMzIgMTUgMzJIMTVDMTIuMjM4NiAzMiAxMCAyOS43NjE0IDEwIDI3VjI1QzEwIDIyLjIzODYgMTIuMjM4NiAyMCAxNSAyMFoiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjE1IiBjeT0iMTUiIHI9IjQiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K" : "/Files/" + Model.ImagePath)" 
@@ -508,6 +494,36 @@
                 </button>
             </div>
         </form>
+
+        <script>
+            document.getElementById('editDriverForm').addEventListener('submit', async event => {
+                event.preventDefault();
+                const form = event.currentTarget;
+                const id = form.elements.Id.value;
+
+                const response = await fetch(`/api/drivers/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: form.elements.Name.value,
+                        dateOfBirth: form.elements.DateOfBirth.value,
+                        email: form.elements.Email.value,
+                        phoneNumber: form.elements.PhoneNumber.value,
+                        gender: Number(form.elements.Gender.value),
+                        isDeleted: form.elements.IsDeleted.value.toLowerCase() === 'true',
+                        isActive: form.elements.IsActive.checked
+                    })
+                });
+
+                if (response.ok) {
+                    window.location.href = '/Admin/Admin_Drivers';
+                    return;
+                }
+
+                const problem = await response.json();
+                alert(problem.detail || 'Unable to update driver');
+            });
+        </script>
     </div>
 </div>
 
@@ -526,7 +542,7 @@
         </div>
         <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 15px;">
             <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-            <form id="deleteForm" method="post" action="@Url.Action("DeleteDriver", "Admin")" style="display: inline;">
+            <form id="deleteForm" style="display: inline;">
                 <input type="hidden" id="driverIdToDelete" name="id" />
                 <button type="submit" class="btn btn-danger">Delete Driver</button>
             </form>
@@ -557,6 +573,21 @@
     function closeModal() {
         document.getElementById('deleteModal').style.display = 'none';
     }
+
+    document.getElementById('deleteForm').addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const driverId = document.getElementById('driverIdToDelete').value;
+        const response = await fetch(`/api/drivers/${driverId}`, { method: 'DELETE' });
+
+        if (response.ok) {
+            window.location.href = '/Admin/Admin_Drivers';
+            return;
+        }
+
+        const problem = await response.json();
+        alert(problem.detail || 'Unable to delete driver');
+    });
 
     // Close modal when clicking outside
     window.onclick = function(event) {

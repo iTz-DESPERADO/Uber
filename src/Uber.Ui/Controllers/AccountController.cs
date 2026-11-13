@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Uber.BLL.ModelVM.Account;
+using Uber.Ui.Models;
 using Uber.DAL.Entities;
+using Uber.Application.Abstractions.Email;
 
 
 
@@ -20,32 +14,26 @@ namespace Uber.Ui.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailService _emailService;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailService = emailService;
         }
 
         public IActionResult ChooseLoginType() => View();
         public IActionResult ChooseRegisterType() => View();
 
-        //[HttpGet]
-        //public IActionResult Login(string role)
-        //{
-        //    if (role == "Driver")
-        //        return View("~/Views/Driver/Login.cshtml");
-
-        //    if (role == "User")
-        //        return View("~/Views/User/Login.cshtml");
-
-        //    return NotFound();
-        //}
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Login(string returnUrl)
         {
-            LoginVM model = new LoginVM
+            LoginModel model = new LoginModel
             {
                 ReturnUrl = returnUrl,
                 ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
@@ -63,12 +51,13 @@ namespace Uber.Ui.Controllers
             return new ChallengeResult(provider, properties);
         }
         [AllowAnonymous]
-        public async Task<IActionResult>
-            ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        public async Task<IActionResult> ExternalLoginCallback(
+            string? returnUrl = null,
+            string? remoteError = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
 
-            LoginVM loginViewModel = new LoginVM
+            LoginModel loginViewModel = new LoginModel
             {
                 ReturnUrl = returnUrl,
                 ExternalLogins =
@@ -101,46 +90,54 @@ namespace Uber.Ui.Controllers
                 return LocalRedirect(returnUrl);
             }
            
-            else
-            {
-              
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
 
-                if (email != null)
+            if (email is not null)
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user is null)
                 {
-                 
-                    var user = await _userManager.FindByEmailAsync(email);
-                    bool created = false;
-                    if (user == null)
+                    user = new User
                     {
-                        user = new User()
-                        {
-                            UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
-                            Email = info.Principal.FindFirstValue(ClaimTypes.Email),
-                            Name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email.Split("@")[0],
-                            DateOfBirth = DateTime.Now.AddYears(-18),
-                            Gender = 0
-                        };
-                        created = true;
-                        await _userManager.CreateAsync(user);
-                        await _userManager.AddToRoleAsync(user, "User");
+                        UserName = email,
+                        Email = email,
+                        Name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email.Split('@')[0],
+                        DateOfBirth = DateTime.UtcNow.AddYears(-18),
+                        Gender = 0
+                    };
+
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (!createResult.Succeeded)
+                    {
+                        AddIdentityErrors(createResult);
+                        return View("Login", loginViewModel);
                     }
 
-                  
-                    await _userManager.AddLoginAsync(user, info);
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    return LocalRedirect(returnUrl);
+                    var roleResult = await _userManager.AddToRoleAsync(user, "User");
+                    if (!roleResult.Succeeded)
+                    {
+                        AddIdentityErrors(roleResult);
+                        return View("Login", loginViewModel);
+                    }
                 }
 
-                ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";
-                ViewBag.ErrorMessage = "Please contact support on Pragim@PragimTech.com";
+                var loginResult = await _userManager.AddLoginAsync(user, info);
+                if (!loginResult.Succeeded)
+                {
+                    AddIdentityErrors(loginResult);
+                    return View("Login", loginViewModel);
+                }
 
-                return View("Error");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return LocalRedirect(returnUrl);
             }
+
+            ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";
+            ViewBag.ErrorMessage = "Please contact support.";
+            return View("Error");
         }
         [HttpPost]
-        public async Task<IActionResult> Login(LoginVM model)
+        public async Task<IActionResult> Login(LoginModel model)
         {
             var result = await _signInManager.PasswordSignInAsync(
             model.Email,
@@ -152,19 +149,29 @@ namespace Uber.Ui.Controllers
 
             if (result.Succeeded)
             {
-                if(_userManager.Users.FirstOrDefault().IsDeleted == true)
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user is null)
                 {
+                    ViewBag.LoginError = "*Invalid username or password";
+                    return View(model);
+                }
+
+                if (user.IsDeleted)
+                {
+                    await _signInManager.SignOutAsync();
                     ViewBag.LoginError = "Account was deleted";
                     return View(model);
                 }
-                else if (User.IsInRole("User"))
+
+                if (await _userManager.IsInRoleAsync(user, "User"))
                     return RedirectToAction("Index", "Home");
-                else if (User.IsInRole("Driver"))
+                if (await _userManager.IsInRoleAsync(user, "Driver"))
                     return RedirectToAction("Dashboard", "Driver");
-                else if (User.IsInRole("Admin"))
+                if (await _userManager.IsInRoleAsync(user, "Admin"))
                     return RedirectToAction("AdminDashBoard", "Admin");
-                else
-                    return View();
+
+                return RedirectToAction("Index", "Home");
             }
             else
             {
@@ -185,31 +192,6 @@ namespace Uber.Ui.Controllers
             return NotFound();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterVM model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email
-                };
-
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {                    
-                    return RedirectToAction("Login");
-                }
-                else
-                {
-                    foreach (var item in result.Errors)
-                        ModelState.AddModelError("Password", item.Description);
-                }
-            }
-            return View(model);
-        }
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Logout()
@@ -226,7 +208,7 @@ namespace Uber.Ui.Controllers
         }
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordVM model)
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
         {
             if (ModelState.IsValid)
             {
@@ -250,7 +232,11 @@ namespace Uber.Ui.Controllers
                                     $"<p><a href='{passwordResetLink}'>Reset Your Password</a></p>" +
                                     $"<p>If you did not request this, please ignore this email.</p>";
 
-                    MailSender.Mail("Password Reset", emailBody, model.Email);
+                    await _emailService.SendAsync(
+                        model.Email,
+                        "Password Reset",
+                        emailBody,
+                        HttpContext.RequestAborted);
 
                     return RedirectToAction("ForgotPasswordConfirmation");
                 }
@@ -262,19 +248,23 @@ namespace Uber.Ui.Controllers
         }
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ResetPassword(string token, string email)
+        public IActionResult ResetPassword(string? token, string? email)
         {
-          
-            if (token == null || email == null)
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
             {
                 ModelState.AddModelError("", "Invalid password reset token");
             }
-            return View();
+
+            return View(new ResetPasswordModel
+            {
+                Token = token ?? string.Empty,
+                Email = email ?? string.Empty
+            });
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(ResetPasswordVM model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
         {
             if (ModelState.IsValid)
             {
@@ -305,5 +295,13 @@ namespace Uber.Ui.Controllers
         }
         [AllowAnonymous]
         public IActionResult ForgotPasswordConfirmation() { return View(); }
+
+        private void AddIdentityErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+        }
     }
 }

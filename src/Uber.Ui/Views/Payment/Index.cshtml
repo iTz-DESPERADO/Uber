@@ -1,125 +1,64 @@
-﻿@{
-    ViewData["Title"] = "Payment Test";
+@{
+    ViewData["Title"] = "Add wallet balance";
 }
 
-<header>
-    <div class="nav-left">
-        <h2>Uber</h2>
-    </div>
-</header>
-
-<div class="page-container">
-    <h1>Payment Test Page</h1>
-
-    <p>Card Payment</p>
-
-    <form asp-action="Checkout" method="post" class="payment-form">
-        <label>Amount to Checkout ($): </label>
-        <input type="number" name="amount" step="0.01" value="50.00" required />
-        <button type="submit" class="btn btn-primary">Start Checkout</button>
-    </form>
-
-    <hr />
-
+<div class="auth-page">
+    <section class="auth-aside">
+        <span class="auth-aside__eyebrow">Uber Wallet</span>
+        <h1>Keep every ride one tap away.</h1>
+        <p>Add balance securely through Stripe. Your updated wallet will be ready for upcoming trips.</p>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <span class="role-icon"><i class="fa-solid fa-wallet"></i></span>
+            <header class="auth-card__header" style="margin-top:1.25rem;">
+                <h2>Add wallet balance</h2>
+                <p>Enter the amount you want to add. You’ll continue to secure checkout.</p>
+            </header>
+            <form id="checkoutForm">
+                <div class="form-field">
+                    <label for="amount" class="form-label">Amount (EGP)</label>
+                    <input id="amount" class="form-control-app" type="number" name="amount" min="1" step="0.01" value="50.00" required />
+                    <span class="form-hint">Minimum top-up: EGP 1.00</span>
+                </div>
+                <button type="submit" class="btn-app btn-app--primary btn-app--block"
+                        disabled="@(ViewBag.StripeConfigured == true ? null : "disabled")">
+                    <i class="fa-solid fa-lock"></i> Continue to checkout
+                </button>
+            </form>
+            @if (ViewBag.StripeConfigured != true)
+            {
+                <p class="oauth-note"><i class="fa-solid fa-circle-info"></i> Stripe sandbox needs an <code>sk_test_</code> key in User Secrets.</p>
+            }
+            <p class="auth-meta" style="justify-content:center; margin-bottom:0;"><i class="fa-brands fa-stripe"></i> Payments are processed securely by Stripe.</p>
+        </div>
+    </section>
 </div>
 
-<style>
-    header {
-        background: #000;
-        color: #fff;
-        padding: 20px 50px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+@section Scripts {
+    <script>
+        document.getElementById('checkoutForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const button = event.currentTarget.querySelector('button');
+            button.disabled = true;
+            button.textContent = 'Preparing checkout…';
 
-    .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 30px;
-    }
+            const amount = Number(event.currentTarget.elements.amount.value);
+            const response = await fetch('/api/payments/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount })
+            });
+            const payload = await response.json();
 
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #fff;
-        color: #333;
-        margin: 0;
-        padding: 0;
-    }
-
-    .page-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 40px 20px;
-    }
-
-    h1 {
-        color: #0d6efd;
-        margin-bottom: 15px;
-        text-align: center;
-    }
-
-    h2 {
-        color: #fff;
-        margin-bottom: 15px;
-        text-align: center;
-    }
-    p {
-        font-size: 16px;
-        margin-bottom: 25px;
-        text-align: center;
-        max-width: 600px;
-    }
-
-    .payment-form {
-        background-color: #fff;
-        padding: 40px 30px;
-        border-radius: 15px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        max-width: 450px;
-        width: 100%;
-        text-align: center;
-        margin-bottom: 50px;
-    }
-
-        .payment-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-align: left;
-        }
-
-        .payment-form input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        .payment-form button {
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            background-color: #0d6efd;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-            .payment-form button:hover {
-                background-color: #0b5ed7;
+            if (!response.ok) {
+                button.disabled = false;
+                button.textContent = 'Continue to checkout';
+                alert(payload.detail || payload.message || 'Unable to start checkout');
+                return;
             }
 
-    hr {
-        margin: 40px 0;
-        border: 0;
-        border-top: 1px solid #ccc;
-        width: 80%;
-    }
-
-</style>
+            window.location.href = payload.checkoutUrl;
+        });
+    </script>
+}

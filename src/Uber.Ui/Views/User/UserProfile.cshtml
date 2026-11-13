@@ -1,547 +1,197 @@
-@model Uber.BLL.ModelVM.User.UserProfileEditVM
+@model Uber.Application.Users.CustomerProfileResponse
 @{
-    ViewData["Title"] = "User Profile";
+    ViewData["Title"] = "My account";
+    var rideCount = Model.Rides.Count();
+    var initial = string.IsNullOrWhiteSpace(Model.Customer.Name)
+        ? "U"
+        : Model.Customer.Name.Trim()[0].ToString().ToUpperInvariant();
 }
 
-@if (TempData["PaymentMessage"] != null)
-{
-    <script>
-        alert('@TempData["PaymentMessage"]');
-    </script>
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-profile.css" asp-append-version="true" />
 }
 
-<div class="profile-container">
-    <aside class="sidebar">
-        <div class="user-info">
-            <div class="icon-placeholder">
-                <img src="~/Files/UserIcon.jpg" alt="User Icon" class="user-icon" />
+<section class="profile-page">
+    <aside class="profile-navigation" aria-label="Account sections">
+        <div class="profile-identity">
+            <span class="profile-avatar" aria-hidden="true">@initial</span>
+            <div>
+                <span>Uber account</span>
+                <h1>@Model.Customer.Name</h1>
+                <p>@Model.Customer.Email</p>
             </div>
-            <h3>@Model.Profile.Name</h3>
         </div>
 
-        <ul>
-            <li data-tab="rides" class="active">🚗 Rides</li>
-            <li data-tab="payment">💳 Wallet</li>
-            <li data-tab="help">❓ Help</li>
-            <li data-tab="settings">⚙ Settings</li>
-            <li class="logout">
-                <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
-                    <button type="submit" class="sidebar-btn">🚪 Logout</button>
-                </form>
-            </li>
-        </ul>
+        <nav class="profile-tabs" aria-label="Profile navigation">
+            <button type="button" class="profile-tab active" data-profile-tab="rides" aria-controls="rides" aria-selected="true">
+                <i class="fa-solid fa-clock-rotate-left"></i><span>Ride history</span>
+            </button>
+            <button type="button" class="profile-tab" data-profile-tab="wallet" aria-controls="wallet" aria-selected="false">
+                <i class="fa-solid fa-wallet"></i><span>Wallet</span>
+            </button>
+            <button type="button" class="profile-tab" data-profile-tab="help" aria-controls="help" aria-selected="false">
+                <i class="fa-regular fa-circle-question"></i><span>Help</span>
+            </button>
+            <button type="button" class="profile-tab" data-profile-tab="settings" aria-controls="settings" aria-selected="false">
+                <i class="fa-solid fa-sliders"></i><span>Account settings</span>
+            </button>
+        </nav>
+
+        <form asp-controller="Account" asp-action="Logout" method="post" class="profile-logout">
+            <button type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Log out</span></button>
+        </form>
     </aside>
 
-    <main class="content">
-        <section id="rides" class="tab-content active">
-            <div class="page-title">Rides Management</div>
+    <div class="profile-content">
+        <section id="rides" class="profile-section active" data-profile-panel>
+            <header class="section-heading">
+                <div>
+                    <span class="section-kicker">Activity</span>
+                    <h2>Your rides</h2>
+                    <p>Review your latest Uber trips and their current status.</p>
+                </div>
+                <span class="ride-count">@rideCount @(rideCount == 1 ? "ride" : "rides")</span>
+            </header>
 
-            <h2>Your Rides</h2>
-
-            <table id="rideUserprofile" class="display">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Image</th>
-                        <th>Driver</th>
-                        <th>Price</th>
-                        <th>Ride Time</th>
-                        <th>Duration</th>
-                        <th>Distance</th>
-                        <th>Status</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-
-                    @if (Model.Profile.Rides != null && Model.Profile.Rides.Any())
-                    {
-                        @foreach (var ride in Model.Profile.Rides)
-                        {
+            @if (Model.Rides.Any())
+            {
+                <div class="table-shell">
+                    <table id="rideUserprofile" class="profile-table">
+                        <thead>
                             <tr>
-                                <td>@ride.Id</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(ride.Driver.ImagePath))
-                                    {
-                                        <img src="~/Files/@ride.Driver.ImagePath" alt="Driver Image" width="60" height="60" style="border-radius:50%;" />
-                                    }
-                                    else
-                                    {
-                                        <span>No Image</span>
-                                    }
-                                </td>
-                                <td>@ride.Driver.Name</td>
-                                <td>@('$' + ride.Price?.ToString("F2"))</td>
-                                <td>@ride.CreatedAt.ToString()</td>
-                                <td>@(ride.Duration + " Min")</td>
-                                <td>@(ride.Distance + "Km")</td>
-                                <td>
-                                    @if (ride.Status == Uber.Domain.Enums.RideStatus.Rejected || ride.Status == Uber.Domain.Enums.RideStatus.Cancelled)
-                                    {
-                                        <span class="badge bg-danger">@ride.Status</span>
-                                    }
-                                    else if (ride.Status == Uber.Domain.Enums.RideStatus.InProgress || ride.Status == Uber.Domain.Enums.RideStatus.Pending)
-                                    {
-                                        <span class="badge bg-warning">@ride.Status</span>
-                                    }
-                                    else if (ride.Status == Uber.Domain.Enums.RideStatus.Completed || ride.Status == Uber.Domain.Enums.RideStatus.Accepted)
-                                    {
-                                        <span class="badge bg-success">@ride.Status</span>
-                                    }
-                                    else if (ride.Status == Uber.Domain.Enums.RideStatus.DriverWaiting)
-                                    {
-                                        <span class="badge bg-info">@ride.Status</span>
-                                    }
-                                </td>
+                                <th>Ride</th>
+                                <th>Driver</th>
+                                <th>Date</th>
+                                <th>Trip</th>
+                                <th>Price</th>
+                                <th>Status</th>
                             </tr>
-                        }
+                        </thead>
+                        <tbody>
+                            @foreach (var ride in Model.Rides)
+                            {
+                                var statusClass = ride.Status switch
+                                {
+                                    Uber.Domain.Enums.RideStatus.Completed => "status-success",
+                                    Uber.Domain.Enums.RideStatus.Accepted => "status-success",
+                                    Uber.Domain.Enums.RideStatus.InProgress => "status-progress",
+                                    Uber.Domain.Enums.RideStatus.DriverWaiting => "status-progress",
+                                    Uber.Domain.Enums.RideStatus.Rejected => "status-danger",
+                                    Uber.Domain.Enums.RideStatus.Cancelled => "status-danger",
+                                    _ => "status-pending"
+                                };
 
-                    }
-                    else
-                    {
-                        <p class="empty-msg">No rides yet.</p>
-                    }
-                </tbody>
-            </table>
-
+                                <tr>
+                                    <td><strong><a asp-controller="Ride" asp-action="RideDetails" asp-route-id="@ride.Id">#@ride.Id</a></strong></td>
+                                    <td>
+                                        <div class="driver-cell">
+                                            @if (!string.IsNullOrEmpty(ride.DriverImagePath))
+                                            {
+                                                <img src="~/Files/@ride.DriverImagePath" alt="" />
+                                            }
+                                            else
+                                            {
+                                                <span aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                                            }
+                                            <strong>@(string.IsNullOrWhiteSpace(ride.DriverName) ? "Finding driver" : ride.DriverName)</strong>
+                                        </div>
+                                    </td>
+                                    <td>@ride.CreatedAt.ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td>@ride.Distance km · @ride.Duration min</td>
+                                    <td><strong>EGP @ride.Price?.ToString("F2")</strong></td>
+                                    <td><span class="ride-status @statusClass">@ride.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-rides">
+                    <span><i class="fa-solid fa-car-side"></i></span>
+                    <h3>Your first ride starts here</h3>
+                    <p>Choose a pickup and destination to get an instant trip estimate.</p>
+                    <a asp-controller="Home" asp-action="Index">Plan a ride <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            }
         </section>
 
+        <section id="wallet" class="profile-section" data-profile-panel hidden>
+            <header class="section-heading">
+                <div>
+                    <span class="section-kicker">Payments</span>
+                    <h2>Uber Wallet</h2>
+                    <p>Keep your balance ready for quick, cash-free rides.</p>
+                </div>
+            </header>
 
+            <div class="wallet-overview">
+                <div>
+                    <span>Available balance</span>
+                    <strong><small>EGP</small> @Model.Customer.Balance.ToString("F2")</strong>
+                    <p>Your wallet is protected and only charged after a ride is confirmed.</p>
+                </div>
+                <i class="fa-solid fa-wallet" aria-hidden="true"></i>
+            </div>
+            <a asp-controller="Payment" asp-action="Index" class="primary-action">Add funds</a>
+        </section>
 
-        <section id="payment" class="tab-content wallet-page">
-            <h1 class="wallet-title">💳 Wallet</h1>
-            <div class="wallet-card big">
-                <div class="wallet-header">
-                    <span class="wallet-balance-label">Cash balance</span>
+        <section id="help" class="profile-section" data-profile-panel hidden>
+            <header class="section-heading">
+                <div>
+                    <span class="section-kicker">Support</span>
+                    <h2>How can we help?</h2>
+                    <p>Quick answers for the most common ride questions.</p>
                 </div>
-                <div class="wallet-balance">
-                    $@Model.Profile.Balance
-                </div>
-                <div class="wallet-actions">
-                    <a asp-controller="Payment" asp-action="Index" class="wallet-btn add">Add Cash</a>
-                </div>
+            </header>
+
+            <div class="help-grid">
+                <article><i class="fa-solid fa-location-dot"></i><h3>Requesting a ride</h3><p>Open the home page, select both locations, review the estimate, then request your Uber.</p></article>
+                <article><i class="fa-solid fa-money-bill-wave"></i><h3>Payment options</h3><p>Choose Wallet for a cash-free trip or Cash when you want to pay the driver directly.</p></article>
+                <article><i class="fa-solid fa-shield-halved"></i><h3>Ride safety</h3><p>Confirm the driver and vehicle details shown in the app before entering the vehicle.</p></article>
+                <article><i class="fa-solid fa-headset"></i><h3>Need more help?</h3><p>Keep your ride number available when contacting the Uber support team.</p></article>
             </div>
         </section>
 
-        <section id="help" class="tab-content">
-            <div class="help-container">
-                <header class="help-header">
-                    <h1> Help & Support</h1>
-                    <p>Quick tips to help you get started and use our app effectively.</p>
-                </header>
-
-                <section class="help-section">
-                    <h2>Getting Started</h2>
-                    <p>Sign up or log in, then request a ride by entering your pickup and drop-off locations.</p>
-                </section>
-
-                <section class="help-section">
-                    <h2>Booking a Ride</h2>
-                    <p>
-                        1. Go to the home page.<br>
-                        2. Enter pickup & drop-off points.<br>
-                        3. Choose your ride type.<br>
-                        4. Confirm booking.
-                    </p>
-                </section>
-
-                <section class="help-section">
-                    <h2>Payment Methods</h2>
-                    <p>We support Cash and Card payments. Set your preference in the "Wallet" tab.</p>
-                </section>
-
-                <section class="help-section">
-                    <h2>Safety Tips</h2>
-                    <ul>
-                        <li>Verify the driver's details before starting.</li>
-                        <li>Share your trip with friends or family.</li>
-                        <li>Contact support if you face any issues.</li>
-                    </ul>
-                </section>
-
-                <section class="help-section contact-section">
-                    <h2>Need More Help?</h2>
-                    <p>Contact our support team anytime:</p>
-                    <p class="contact-text">
-                        <a href="mailto:amrahmed24555@gmail.com">amrahmed24555@gmail.com</a>
-                    </p>
-                </section>
-            </div>
-        </section>
-
-
-        <section id="settings" class="tab-content">
-            <h2>Settings</h2>
-            <form asp-controller="User" asp-action="EditUser" method="post" class="settings-form">
-                <label>Name</label>
-                <input asp-for="Profile.Name" type="text" />
-
-                <label>Email</label>
-                <input asp-for="Email" type="email" readonly />
-
-                <div class="phone-container">
-                    <div class="phone-prefix">
-                        <img src="https://flagcdn.com/w20/eg.png" alt="Egypt Flag">
-                        +20
-                    </div>
-                    <input asp-for="PhoneNumber" id="phone" class="phone-input" type="tel"
-                           inputmode="numeric"
-                           pattern="^(10|11|12|15)\d{8}$"
-                           placeholder="1012345678" maxlength="10" required>
+        <section id="settings" class="profile-section" data-profile-panel hidden>
+            <header class="section-heading">
+                <div>
+                    <span class="section-kicker">Personal details</span>
+                    <h2>Account settings</h2>
+                    <p>Keep your contact information accurate for smoother rides.</p>
                 </div>
+            </header>
 
-                <label>Date of Birth</label>
-                <input asp-for="DateOfBirth" type="date" min="1925-01-01" max="2007-12-31" />
-
-                <button type="submit" class="btn-update">Update Profile</button>
+            <form id="userProfileForm" class="profile-form">
+                <div class="profile-form-grid">
+                    <label>
+                        <span>Full name</span>
+                        <input name="Name" value="@Model.Customer.Name" type="text" autocomplete="name" required />
+                    </label>
+                    <label>
+                        <span>Email address</span>
+                        <input name="Email" value="@Model.Customer.Email" type="email" autocomplete="email" readonly />
+                    </label>
+                    <label>
+                        <span>Phone number</span>
+                        <input name="PhoneNumber" value="@Model.Customer.PhoneNumber" id="phone" type="tel"
+                               inputmode="numeric" pattern="^0(10|11|12|15)\d{8}$" placeholder="01012345678"
+                               maxlength="11" autocomplete="tel" required />
+                    </label>
+                    <label>
+                        <span>Date of birth</span>
+                        <input name="DateOfBirth" value="@Model.Customer.DateOfBirth.ToString("yyyy-MM-dd")" type="date"
+                               min="1925-01-01" max="2007-12-31" required />
+                    </label>
+                </div>
+                <p id="profileFormStatus" class="form-status" role="status" hidden></p>
+                <button type="submit" class="primary-action">Save changes</button>
             </form>
         </section>
-    </main>
-</div>
+    </div>
+</section>
 
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-<script>
-    document.querySelectorAll(".sidebar ul li[data-tab]").forEach(item => {
-        item.addEventListener("click", () => {
-            document.querySelectorAll(".sidebar ul li").forEach(li => li.classList.remove("active"));
-            document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-
-            item.classList.add("active");
-            document.getElementById(item.dataset.tab).classList.add("active");
-        });
-    });
-</script>
-
-<style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #eef2f3;
-    }
-
-    .profile-container {
-        display: flex;
-        min-height: 100vh;
-    }
-
-    .sidebar {
-        width: 220px;
-        background: linear-gradient(180deg, #000, #222);
-        color: #fff;
-        padding: 20px 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: fixed;
-        height: 100%;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-    }
-
-    .user-info {
-        text-align: center;
-        padding: 15px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        margin-bottom: 15px;
-    }
-
-    .icon-placeholder {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-bottom: 8px;
-    }
-
-    .user-icon {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-
-    .user-info h3 {
-        font-size: 16px;
-        margin: 0;
-        color: #fff;
-    }
-
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-        width: 100%;
-    }
-
-        .sidebar ul li {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-            .sidebar ul li:not(.logout):hover,
-            .sidebar ul li:not(.logout).active {
-                background: #1CB5A3;
-            }
-
-            .sidebar ul li.logout {
-                color: #fff;
-            }
-
-                .sidebar ul li.logout:hover {
-                    background: #e74c3c;
-                }
-
-    .sidebar-btn {
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 14px;
-        padding: 0;
-        cursor: pointer;
-        width: 100%;
-        text-align: left;
-    }
-
-    .sidebar ul li:not(.logout) .sidebar-btn:hover {
-        color: #1CB5A3;
-    }
-
-    .sidebar ul li.logout .sidebar-btn:hover {
-        color: #fff;
-    }
-
-    .content {
-        flex: 1;
-        margin-left: 220px;
-        padding: 20px;
-    }
-
-    .tab-content {
-        display: none;
-    }
-
-        .tab-content.active {
-            display: block;
-        }
-
-    .ride-card {
-        background: #fff;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .empty-msg {
-        color: #777;
-        font-style: italic;
-    }
-
-    .btn-update {
-        display: inline-block;
-        padding: 10px 15px;
-        background: #1CB5A3;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 6px;
-        transition: background 0.3s ease;
-    }
-
-        .btn-update:hover {
-            background: #17a38a;
-        }
-
-    .wallet-page {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: calc(100vh - 60px);
-        background: none;
-    }
-
-        .wallet-page.active {
-            display: flex;
-        }
-
-    .wallet-title {
-        font-size: 40px;
-        font-weight: bold;
-        margin-bottom: 30px;
-        color: #333;
-    }
-
-    .wallet-card.big {
-        background: linear-gradient(135deg, #1CB5A3, #0e8b77);
-        color: #fff;
-        border-radius: 20px;
-        padding: 50px;
-        width: 500px;
-        text-align: center;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-    }
-
-    .wallet-balance-label {
-        font-size: 18px;
-        color: rgba(255,255,255,0.8);
-    }
-
-    .wallet-balance {
-        font-size: 50px;
-        font-weight: bold;
-        margin: 20px 0 30px;
-    }
-
-    .wallet-actions {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .wallet-btn {
-        flex: 1;
-        padding: 15px;
-        margin: 0 8px;
-        border: none;
-        border-radius: 12px;
-        font-size: 18px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-        background: rgba(255,255,255,0.15);
-        color: #fff;
-    }
-
-        .wallet-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-    .help-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 30px;
-        background: #f9f9f9;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .help-header h1 {
-        color: #1CB5A3;
-        font-size: 36px;
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    .help-header p {
-        font-size: 16px;
-        text-align: center;
-        color: #555;
-        margin-bottom: 30px;
-    }
-
-    .help-section {
-        margin-bottom: 25px;
-    }
-
-        .help-section h2 {
-            color: #1CB5A3;
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-
-        .help-section p,
-        .help-section ul {
-            font-size: 16px;
-            color: #333;
-            line-height: 1.6;
-        }
-
-            .help-section ul li {
-                margin-bottom: 8px;
-            }
-
-    .contact-section p.contact-text {
-        font-size: 16px;
-        color: #1CB5A3;
-        text-align: center;
-        margin-top: 15px;
-    }
-
-        .contact-section p.contact-text a {
-            text-decoration: none;
-            color: #1CB5A3;
-            font-weight: 600;
-            transition: color 0.3s;
-        }
-
-            .contact-section p.contact-text a:hover {
-                color: #17a38a;
-                text-decoration: underline;
-                cursor: pointer;
-            }
-
-
-    .contact-section .btn-contact {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #1CB5A3;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: background 0.3s ease;
-    }
-
-        .contact-section .btn-contact:hover {
-            background: #17a38a;
-        }
-
-    .settings-form {
-        display: flex;
-        flex-direction: column;
-        max-width: 600px;
-        margin: 40px auto;
-        padding: 30px;
-        background: #fff;
-        border-radius: 15px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    }
-
-        .settings-form label {
-            margin-top: 15px;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .settings-form input {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 15px;
-        }
-
-        .settings-form .btn-update {
-            margin-top: 25px;
-            padding: 15px;
-            font-size: 16px;
-            background-color: #1CB5A3;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-            .settings-form .btn-update:hover {
-                background-color: #17a38a;
-            }
-</style>
-
-
-
-<script>
-    const phoneInput = document.getElementById('phone');
-
-    // Prevent non-digit input
-    phoneInput.addEventListener('input', () => {
-        phoneInput.value = phoneInput.value.replace(/\D/g, '');
-    });
-</script>
+@section Scripts {
+    <script src="~/js/user-profile.js" asp-append-version="true"></script>
+}

@@ -1,16 +1,22 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Stripe;
-using Uber.BLL.Mapper;
-using Uber.BLL.Services.Abstraction;
-using Uber.BLL.Services.Impelementation;
+using Uber.Application;
+using Uber.Infrastructure;
 using Uber.DAL.DataBase;
 using Uber.DAL.Entities;
-using Uber.DAL.Repo.Abstraction;
-using Uber.DAL.Repo.Impelementation;
-using Uber.DAL.Repo.Implementation;
+using Uber.Ui.Authorization.Permissions;
+using Uber.Ui.Endpoints.Rides;
+using Uber.Ui.ExceptionHandling;
+using Uber.Ui.Endpoints.Admins;
+using Uber.Ui.Endpoints.Drivers;
+using Uber.Ui.Endpoints.Users;
+using Uber.Ui.Endpoints.Payments;
+using Uber.Ui.Endpoints.Authentication;
+using Uber.Infrastructure.Identity;
+using Uber.Ui.Endpoints.Locations;
+using System.Text.Json.Serialization;
 
 namespace Uber.Ui
 {
@@ -20,93 +26,109 @@ namespace Uber.Ui
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.ConfigureHttpJsonOptions(options =>
+                options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            builder.Services.AddApplication();
+            builder.Services.AddInfrastructure();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
+            builder.Services.AddHttpClient();
+            builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-            // Enhancement ConnectionString
-            var connectionString = builder.Configuration.GetConnectionString("Mydatabase");
+            var connectionString = builder.Configuration.GetConnectionString("Mydatabase")
+                ?? throw new InvalidOperationException(
+                    "Connection string 'Mydatabase' is not configured.");
 
             builder.Services.AddDbContext<UberDBContext>(options =>
-            options.UseSqlServer(connectionString));
-
-            // Auto Mapper
-            builder.Services.AddAutoMapper(x => x.AddProfile(new DomainProfile()));
-
-            // Dependency 
-            builder.Services.AddScoped<IDriverService, DriverService>();
-            builder.Services.AddScoped<IDriverRepo, DriverRepo>();
-
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IUserRepo, UserRepo>();
-
-            builder.Services.AddScoped<IRideService, RideService>();
-            builder.Services.AddScoped<IRideRepo, RideRepo>();
-
-            builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IAdminRepo, AdminRepo>();
-
-            // Stripe
-            var stripeSettings = builder.Configuration.GetSection("Stripe");
-            StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
-
-            // Identity
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options => {
-                    options.LoginPath = new PathString("/Account/Login");
-                    options.AccessDeniedPath = new PathString("/Account/Login");
-                });
-
-            //builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
-            //        .AddEntityFrameworkStores<UberDBContext>()
-            //        .AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>(TokenOptions.DefaultProvider);
-
+                options.UseSqlServer(connectionString));
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                // Default Password settings.
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 0;
-            }).AddEntityFrameworkStores<UberDBContext>()
-            .AddDefaultTokenProviders();
+            })
+                .AddEntityFrameworkStores<UberDBContext>()
+                .AddDefaultTokenProviders();
 
-            // SignalR
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/Login";
+            });
+
             builder.Services.AddSignalR();
+
             builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
-            // 
+
             builder.Services.AddHttpContextAccessor();
-            // Adding Google and Facebook
-            builder.Services.AddAuthentication()
-                .AddGoogle(options =>
+
+            var externalAuthentication = builder.Services.AddAuthentication();
+            var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+            var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+            if (!string.IsNullOrWhiteSpace(googleClientId)
+                && !string.IsNullOrWhiteSpace(googleClientSecret))
+            {
+                externalAuthentication.AddGoogle(options =>
                 {
-                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-                })
-                .AddFacebook(options =>
+                    options.ClientId = googleClientId;
+                    options.ClientSecret = googleClientSecret;
+                    options.SaveTokens = true;
+                    options.AccessDeniedPath = "/Account/Login";
+                });
+            }
+
+            var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+            var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+
+            if (!string.IsNullOrWhiteSpace(facebookAppId)
+                && !string.IsNullOrWhiteSpace(facebookAppSecret))
+            {
+                externalAuthentication.AddFacebook(options =>
                 {
-                    options.AppId = builder.Configuration["Authentication:Facebook:AppId"];
-                    options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
-                }); var app = builder.Build();
-            // Configure the HTTP request pipeline.
+                    options.AppId = facebookAppId;
+                    options.AppSecret = facebookAppSecret;
+                    options.SaveTokens = true;
+                    options.AccessDeniedPath = "/Account/Login";
+                });
+            }
+
+            var app = builder.Build();
+            await app.Services.InitializeIdentityAsync();
+
+            if (app.Environment.IsDevelopment())
+            {
+                await app.Services.SeedDevelopmentDataAsync();
+            }
+
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-            //SignalR
+
+            app.UseExceptionHandler();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseAntiforgery();
 
             app.MapHub<RideHub>("/rideHub");
+            app.MapRideQueryEndpoints();
+            app.MapRideCommandEndpoints();
+            app.MapUserEndpoints();
+            app.MapDriverEndpoints();
+            app.MapAdminEndpoints();
+            app.MapPaymentEndpoints();
+            app.MapRegistrationEndpoints();
+            app.MapLocationEndpoints();
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");

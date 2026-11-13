@@ -1,103 +1,109 @@
-# Incremental Clean Architecture migration
+# Clean Architecture migration
 
-## Working agreement
+## Status
 
-- One reviewable phase per `codex/step-NN-description` branch.
-- Stop after each phase for the owner's review. Start the next branch only after review, from the accepted previous phase (or the updated base after merge).
-- Preserve business rules, validation messages, routes, response shapes, redirects, authorization, SignalR events and persistence behavior.
-- Do not combine behavior fixes, package upgrades or database schema changes with structural migration.
-- Implement Result Pattern, CQRS, Send dispatch and pipeline behaviors locally.
-  Do not add MediatR or another mediator library.
+The migration is complete in the current source tree. Production projects live
+under `src/`, tests live under `tests/`, and the repository-level solution,
+README, and Git ignore file remain at the root.
 
-## Step 01: foundation (committed as `3a6d923`)
-
-Base commit: `08f910d`. Existing projects target .NET 8.
-
-The running application still uses `Uber.Ui -> Uber.BLL -> Uber.DAL`.
-This phase renames the presentation project from `Uber.PLL` to `Uber.Ui`
-(folder, project, namespaces, Razor imports and scoped CSS reference), and adds
-empty, buildable projects and solution entries:
+The former `Uber.BLL`, `Uber.DAL`, and `Uber.PLL` projects have been removed.
+`Uber.Ui` is the presentation and composition project.
 
 ```text
-Uber.Application    -> Uber.Domain
-Uber.Infrastructure -> Uber.Application -> Uber.Domain
+Uber.Ui -> Uber.Application -> Uber.Domain
+   |              ^
+   +----> Uber.Infrastructure
+                |        |
+                +--------+----> Uber.Domain
 ```
 
-No existing runtime project references these new projects yet. This is the
-foundation for migration, not a completed Clean Architecture conversion.
+Infrastructure is referenced by UI only to register implementations. Domain
+and Application do not reference EF Core, ASP.NET Identity, Stripe, SignalR, or
+the web project.
 
-Target responsibilities:
+## Layer responsibilities
 
-| Project | Responsibility | Allowed dependencies |
+| Project | Owns | Does not own |
 | --- | --- | --- |
-| Uber.Domain | Business entities, value objects, rules and domain errors | No infrastructure or web frameworks |
-| Uber.Application | Use cases, commands, queries, handlers and external-service/repository contracts | Domain |
-| Uber.Infrastructure | EF Core, repository implementations, Identity, Stripe, mail and file storage | Application and Domain |
-| Uber.Ui | MVC, Razor, HTTP mapping, SignalR transport and composition root | Application; Infrastructure for registration |
+| `Uber.Domain` | Entities, business behavior, errors, Result contracts, repository contracts, Unit of Work contract, domain services | HTTP, EF Core, Identity, Stripe, UI |
+| `Uber.Application` | Commands, queries, handlers, validators, custom mediator, pipeline behaviors, use-case errors, external-service abstractions | Database models, MVC, SignalR transport |
+| `Uber.Infrastructure` | EF/Identity models, DbContext, repositories, migrations, Dapper connection factory, Stripe, SMTP, location provider, development seed | HTTP endpoints and view behavior |
+| `Uber.Ui` | Minimal APIs, page controllers, Razor views, permission policies, SignalR hub, global exception mapping, composition root | Business state transitions and persistence rules |
 
-The presentation project is now `Uber.Ui`; its existing BLL reference stays in
-place until feature migration. Remove BLL/DAL only after all callers migrate.
+Domain entities and persistence models are deliberately separate. Infrastructure
+maps tracked EF rows to Domain entities, applies successful domain changes back
+to those rows, and commits through the scoped `IUnitOfWork`.
 
-## Observed boundaries requiring care
+## Architectural decisions
 
-- Entities live in DAL. `ApplicationUser` inherits `IdentityUser`, and `User`
-  inherits `ApplicationUser`. Moving these classes verbatim into Domain would
-  retain the Identity dependency. Separate persistence/identity models with
-  explicit mapping in a dedicated phase, preserving keys and existing schema.
-- Services currently return tuples, nullable entities and lists. Result adapters
-  must preserve each method's current success, absence and failure semantics.
-- `RideService` enforces status transitions and rating behavior. Characterize
-  these before changing their implementation location.
-- `PaymentService` uses Stripe SDK types directly. Introduce application-owned
-  contracts and infrastructure adapters while preserving amounts and currency.
-- EF migrations remain in DAL until persistence is migrated and schema/model
-  equivalence is verified. Do not generate or apply migrations in this phase.
+### Result Pattern
 
-## Planned review phases
+Expected business failures use `Result` or `Result<T>`. Repository absence is
+represented by `null`, persistence failures remain exceptions, and HTTP status
+mapping stays in UI. See [result-pattern.md](result-pattern.md).
 
-Production projects live under `src/`; test projects live under `tests/`.
-`Uber.sln`, `README.md` and `.gitignore` stay at the repository root. The
-solution mirrors these groups as solution folders. Run build and test commands
-from the root; run the web app using `src/Uber.Ui/Uber.Ui.csproj`.
+### CQRS without MediatR
 
-Step 02 added the [Result Pattern contracts](result-pattern.md) and isolated
-domain tests (commit `4cc9eb5`). Step 03 added the [CQRS contracts, custom mediator
-and pipeline behaviors](cqrs.md), committed as `879617e`. Step 04 establishes the
-[ride transition behavior baseline](ride-behavior-baseline.md). Existing
-application behavior remains on the legacy path until individual features migrate.
-Step 04 was committed as `3f9bbe1`. Step 05 begins the
-[domain boundary extraction](domain-boundaries.md) with enums and ride transition
-rules. The wider Identity/entity split is deferred to feature-specific reviews
-to avoid combining unrelated persistence and authentication changes.
+Application provides its own `IMediator.Send`, request/handler contracts,
+assembly-based handler discovery, and ordered pipeline behaviors. FluentValidation
+runs in the validation behavior. Queries use Dapper projections; commands load
+Domain entities through repositories and commit once through Unit of Work. See
+[cqrs.md](cqrs.md).
 
-| Phase / branch suffix | Deliverable |
-| --- | --- |
-| 02 `result-pattern` | Error, Result and Result<T> contracts with invariant tests; no blanket replacement of existing return values |
-| 03 `cqrs-foundation` | Unified request/handler contracts, custom mediator with Send, ordered pipeline behaviors, cancellation support and DI/dispatch tests |
-| 04 `behavior-baseline` | Characterization tests for the first feature, including current failure messages and observable side effects |
-| 05 `domain-boundaries` | Extract enums and ride rules; define Identity/persistence boundaries and verify the generated schema is unchanged |
-| 06 `first-feature` | Migrate one small end-to-end feature through Application and Infrastructure; preserve its MVC contract |
-| 07+ `feature-name` | Separate reviewed branches for remaining user, driver, ride, admin, account and payment use cases; split large features further |
-| final `remove-legacy-layers` | Remove unused BLL/DAL, verify dependency direction and run regression checks |
+### Identity and permissions
 
-Choose the first vertical slice after inspecting its complete callers and side
-effects. Commands and queries share the existing database; CQRS does not require
-event sourcing or separate databases. Expected failures use Result; preserve
-existing error handling at boundaries during migration rather than silently
-changing what clients receive.
+ASP.NET Identity models remain in Infrastructure. Domain users expose shared
+behavior through the abstract `User` and `RatedUser` types, with customer,
+driver, and admin specializations. UI permission requirements support claim-based
+permissions with compatible role fallbacks for the current roles.
 
-## Validation
+### Ride integrity
 
-Baseline command: `dotnet build Uber.sln --nologo -v minimal -m:1`.
-Baseline result: success, 0 errors, 111 warnings on the initial build (including
-existing nullable warnings and AutoMapper NU1903). Incremental builds can report
-fewer warnings. Package remediation is separate from this migration.
+The `Ride` entity owns its lifecycle. Participant ownership is checked in
+handlers. SQL `rowversion` columns protect rides and Identity users from lost
+updates. SQL unique indexes guarantee:
 
-For step 01, build the solution again and inspect the diff: the three new
-project files, solution membership, presentation rename and documentation
-should change. Verify that moved assets retain their contents and Razor views
-compile with the new namespaces and scoped CSS bundle name.
-No business rules change in this phase. This
-build does not establish database, authentication or external-service health.
-Later feature phases require characterization/regression tests and relevant
-integration checks before review.
+- One active ride per driver for `Accepted`, `DriverWaiting`, or `InProgress`.
+- One rating per `(RideId, RaterId)`.
+
+The global exception handler converts concurrency and unique-index races into
+HTTP `409 Conflict`. See [ride-transitions-cqrs.md](ride-transitions-cqrs.md).
+
+## Migration history
+
+| Step | Branch | Outcome |
+| --- | --- | --- |
+| 01 | `codex/step-01-clean-architecture-foundation` | Renamed presentation project to `Uber.Ui`; created the target projects and root layout |
+| 02 | `codex/step-02-result-pattern` | Added Domain `Error`, `Result`, and `Result<T>` |
+| 03 | `codex/step-03-cqrs-foundation` | Added custom mediator, unified request contracts, pipelines, and assembly scanning |
+| 04 | `codex/step-04-behavior-baseline` | Captured legacy ride behavior before migration |
+| 05 | `codex/step-05-domain-boundaries` | Began Domain enum and rule extraction |
+| 06 | `codex/step-06-ride-transitions` | Moved ride transitions and repository boundaries into Clean Architecture |
+| 07 | `codex/step-07-ride-integrity` | Completed vertical slices, removed legacy projects, added UI/API integrations and ride integrity safeguards |
+
+## Build and database
+
+Run from the repository root:
+
+```sh
+dotnet restore Uber.sln
+dotnet build Uber.sln --no-restore
+dotnet ef database update \
+  --project src/Uber.Infrastructure/Uber.Infrastructure.csproj \
+  --startup-project src/Uber.Ui/Uber.Ui.csproj
+dotnet run --project src/Uber.Ui/Uber.Ui.csproj
+```
+
+Secrets belong in user secrets, environment variables, or the deployment secret
+store. `src/Uber.Ui/appsettings.example.json` documents the required keys.
+
+## Review rules for future changes
+
+- Keep business transitions in Domain entities or Domain services.
+- Keep expected failures as Result values; do not wrap every infrastructure
+  exception in Result.
+- Keep repository interfaces in Domain and query/external service abstractions
+  in Application.
+- Add migrations for schema changes and preserve database-level invariants.
+- Keep Minimal API endpoints thin: authorize, send, translate, notify.
+- Do not introduce MediatR; extend the local mediator and pipeline contracts.

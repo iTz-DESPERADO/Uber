@@ -5,7 +5,7 @@ public sealed record Error
     public Error(string code, string message)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
-        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+        ArgumentNullException.ThrowIfNull(message);
         Code = code;
         Message = message;
     }

@@ -1,4 +1,4 @@
-@model Uber.DAL.Entities.User
+@model Uber.Application.Users.CustomerProfileResponse
 @{
     ViewData["Title"] = "Edit Rider";
 }
@@ -348,7 +348,7 @@
             <a asp-controller="Admin" asp-action="Admin_Drivers">Drivers</a>
             <a asp-controller="Admin" asp-action="Admin_Riders">Riders</a>
             <a asp-controller="Admin" asp-action="Admin_Rides">Rides</a>
-            <a asp-controller="Admin" asp-action="Admin_Admines">Admins</a>
+            <a asp-controller="Admin" asp-action="Admin_Admins">Admins</a>
         </div>
     </div>
 </div>
@@ -356,67 +356,52 @@
 <div class="edit-container">
     <div class="edit-header">
         <h2>✏️ Edit Rider</h2>
-        <p>Update information for @Model.Name</p>
+        <p>Update information for @Model.Customer.Name</p>
     </div>
 
     <div class="edit-body">
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">
-                ✅ @TempData["SuccessMessage"]
-            </div>
-        }
-
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger">
-                ❌ @TempData["ErrorMessage"]
-            </div>
-        }
-
-        <form asp-controller="Admin" asp-action="EditUser" method="post">
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="CreatedAt" />
-            <input type="hidden" asp-for="IsDeleted" />
+        <form id="editUserForm">
+            <input type="hidden" name="Id" value="@Model.Customer.Id" />
+            <input type="hidden" name="IsDeleted" value="@Model.Customer.IsDeleted" />
 
             <div class="form-section">
                 <h3>👤 Personal Information</h3>
                 
                 <div class="form-group">
-                    <label asp-for="Name">Full Name</label>
-                    <input asp-for="Name" class="form-control" placeholder="Enter rider's full name" required />
+                    <label for="Name">Full Name</label>
+                    <input name="Name" value="@Model.Customer.Name" class="form-control" placeholder="Enter rider's full name" required />
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label asp-for="Email">Email Address</label>
-                        <input asp-for="Email" class="form-control" disabled />
+                        <label for="Email">Email Address</label>
+                        <input name="Email" value="@Model.Customer.Email" class="form-control" readonly />
                         <small style="color: #6c757d; font-size: 12px;">Email cannot be changed</small>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="PhoneNumber">Phone Number</label>
-                        <input asp-for="PhoneNumber" class="form-control" disabled />
+                        <label for="PhoneNumber">Phone Number</label>
+                        <input name="PhoneNumber" value="@Model.Customer.PhoneNumber" class="form-control" readonly />
                         <small style="color: #6c757d; font-size: 12px;">Phone number cannot be changed</small>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label asp-for="DateOfBirth">Date of Birth</label>
-                        <input asp-for="DateOfBirth" type="date" class="form-control" required />
+                        <label for="DateOfBirth">Date of Birth</label>
+                        <input name="DateOfBirth" value="@Model.Customer.DateOfBirth.ToString("yyyy-MM-dd")" type="date" class="form-control" required />
                     </div>
 
                     <div class="form-group">
                         <label>Gender</label>
-                        <input value="@Model.Gender.ToString()" class="form-control" disabled />
+                        <input value="@Model.Customer.Gender.ToString()" class="form-control" disabled />
                         <small style="color: #6c757d; font-size: 12px;">Gender cannot be changed</small>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Age</label>
-                    <input value="@Model.Age() years" class="form-control" disabled />
+                    <input value="@Model.Customer.Age years" class="form-control" disabled />
                     <small style="color: #6c757d; font-size: 12px;">Calculated automatically</small>
                 </div>
             </div>
@@ -427,24 +412,24 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Account Created</label>
-                        <input value="@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")" class="form-control" disabled />
+                        <input value="@Model.Customer.CreatedAt.ToString("MMM dd, yyyy HH:mm")" class="form-control" disabled />
                     </div>
 
                     <div class="form-group">
                         <label>Total Rides</label>
-                        <input value="@(Model.Rides?.Count ?? 0) rides" class="form-control" disabled />
+                        <input value="@Model.Rides.Count rides" class="form-control" disabled />
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Rating</label>
-                        <input value="@Model.Rating().ToString("F1")/5 ⭐ (@Model.TotalRatings ratings)" class="form-control" disabled />
+                        <input value="@Model.Customer.Rating.ToString("F1")/5 ⭐ (@Model.Customer.TotalRatings ratings)" class="form-control" disabled />
                     </div>
 
                     <div class="form-group">
                         <label>Wallet Balance</label>
-                        <input value="$@Model.Balance.ToString("F2")" class="form-control" disabled />
+                        <input value="EGP @Model.Customer.Balance.ToString("F2")" class="form-control" disabled />
                     </div>
                 </div>
             </div>
@@ -453,11 +438,11 @@
                 <h3>🔄 Account Status</h3>
                 
                 <div class="status-toggle">
-                    <div class="toggle-switch @(Model.IsDeleted ? "" : "active")" onclick="toggleStatus()">
+                    <div class="toggle-switch @(Model.Customer.IsDeleted ? "" : "active")" onclick="toggleStatus()">
                         <div class="toggle-slider"></div>
                     </div>
-                    <span class="toggle-label" id="statusLabel">@(Model.IsDeleted ? "Inactive" : "Active")</span>
-                    <input type="hidden" id="isActive" name="isActive" value="@(!Model.IsDeleted).ToString().ToLower()" />
+                    <span class="toggle-label" id="statusLabel">@(Model.Customer.IsDeleted ? "Inactive" : "Active")</span>
+                    <input type="hidden" id="isActive" name="isActive" value="@(!Model.Customer.IsDeleted).ToString().ToLower()" />
                 </div>
             </div>
 
@@ -470,13 +455,41 @@
                     💾 Save Changes
                 </button>
                 
-                <button type="button" class="btn btn-danger" onclick="deleteUser('@Model.Id', '@Model.Name')">
+                <button type="button" class="btn btn-danger" onclick="deleteUser('@Model.Customer.Id', '@Model.Customer.Name')">
                     🗑️ Delete Rider
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    document.getElementById('editUserForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const id = form.elements.Id.value;
+
+        const response = await fetch(`/api/users/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: form.elements.Name.value,
+                dateOfBirth: form.elements.DateOfBirth.value,
+                email: form.elements.Email.value,
+                phoneNumber: form.elements.PhoneNumber.value,
+                isDeleted: form.elements.IsDeleted.value.toLowerCase() === 'true'
+            })
+        });
+
+        if (response.ok) {
+            window.location.href = '/Admin/Admin_Riders';
+            return;
+        }
+
+        const problem = await response.json();
+        alert(problem.detail || 'Unable to update user');
+    });
+</script>
 
 <!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
@@ -485,7 +498,7 @@
         <p style="margin-bottom: 25px; color: #495057;">Are you sure you want to delete rider <strong id="riderNameToDelete"></strong>?</p>
         <p style="margin-bottom: 25px; color: #6c757d; font-size: 14px;">This action cannot be undone and will remove all associated data.</p>
         
-        <form id="deleteForm" method="post" action="@Url.Action("DeleteUser", "Admin")" style="display: inline;">
+        <form id="deleteForm" style="display: inline;">
             <input type="hidden" id="userIdToDelete" name="id" />
             <button type="submit" class="btn btn-danger" style="margin-right: 10px;">🗑️ Delete Rider</button>
         </form>
@@ -520,6 +533,21 @@
     function closeModal(modalId) {
         document.getElementById(modalId).style.display = 'none';
     }
+
+    document.getElementById('deleteForm').addEventListener('submit', async event => {
+        event.preventDefault();
+
+        const userId = document.getElementById('userIdToDelete').value;
+        const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+
+        if (response.ok) {
+            window.location.href = '/Admin/Admin_Riders';
+            return;
+        }
+
+        const problem = await response.json();
+        alert(problem.detail || 'Unable to delete user');
+    });
 
     // Close modal when clicking outside
     window.onclick = function(event) {

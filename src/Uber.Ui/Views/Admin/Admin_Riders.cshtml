@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Uber.BLL.ModelVM.User.EditUser>
+﻿@model IEnumerable<Uber.Application.Users.CustomerResponse>
 @{
     ViewData["Title"] = "Riders Management";
 }
@@ -96,12 +96,6 @@
 
 
 
-<header>
-    <div class="nav-left">
-        <h1>Uber</h1>
-    </div>
-</header>
-
 <div class="page-title">Riders Management</div>
 
 <table id="Users" class="display">
@@ -113,6 +107,7 @@
             <th>Phone Number</th>
             <th>Date of Birth</th>
             <th>Deleted</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody id="ridersTable">
@@ -134,25 +129,10 @@
                         <span class="badge bg-success">Available</span>
                     }
                 </td>
+                <td><a asp-controller="Admin" asp-action="EditRider" asp-route-id="@rider.Id" class="table-action">Manage</a></td>
            
             </tr>
         }
     </tbody>
 </table>
-
-<script>
-    function deleteRider(id) {
-        if (confirm("Are you sure you want to delete this rider?")) {
-            fetch(`/Admin/DeleteRider/${id}`, { method: 'POST' })
-                .then(response => {
-                    if (response.ok) {
-                        document.querySelector(`tr[data-id='${id}']`).remove();
-                    } else {
-                        alert("Error deleting rider.");
-                    }
-                });
-        }
-    }
-</script>
-
 

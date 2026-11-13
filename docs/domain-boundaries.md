@@ -1,5 +1,9 @@
 # Domain boundaries: step 05, first extraction
 
+> Historical migration record. The current architecture is documented in
+> [clean-architecture-migration.md](clean-architecture-migration.md); later steps
+> completed the entity split and removed the legacy projects.
+
 Branch: `codex/step-05-domain-boundaries`, based on behavior baseline `3f9bbe1`.
 
 ## Implemented in this review

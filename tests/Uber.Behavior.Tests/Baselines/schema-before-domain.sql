@@ -41,6 +41,7 @@ CREATE TABLE [AspNetUsers] (
     [Gender] int NOT NULL,
     [DateOfBirth] datetime2 NOT NULL,
     [IsDeleted] bit NOT NULL,
+    [CreatedAt] datetime2 NOT NULL DEFAULT (SYSUTCDATETIME()),
     [Discriminator] nvarchar(21) NOT NULL,
     [ModifiedAt] datetime2 NULL,
     [Balance] float NULL,

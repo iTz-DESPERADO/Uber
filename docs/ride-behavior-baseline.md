@@ -1,5 +1,9 @@
 # Ride transition behavior baseline: step 04
 
+> Historical characterization record captured before the ride migration. See
+> [ride-transitions-cqrs.md](ride-transitions-cqrs.md) for the current workflow
+> and database integrity rules.
+
 Branch: `codex/step-04-behavior-baseline`, based on `879617e`.
 
 The first slice is driver arrival, ride start and ride completion. Tests invoke

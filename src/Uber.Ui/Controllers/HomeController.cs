@@ -1,20 +1,35 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Uber.Ui.Models;
+using System.Security.Claims;
+using Uber.Application.Abstractions.Messaging;
+using Uber.Application.Rides.GetActiveRide;
+using Uber.Domain.Enums;
 
 namespace Uber.Ui.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(IMediator mediator) : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            _logger = logger;
-        }
+            if (User.Identity?.IsAuthenticated == true && User.IsInRole("User"))
+            {
+                var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public IActionResult Index()
-        {
+                if (!string.IsNullOrWhiteSpace(customerId))
+                {
+                    var activeRide = await mediator.Send(
+                        new GetActiveRideQuery(customerId), cancellationToken);
+
+                    if (activeRide.IsSuccess && activeRide.Value is { } ride)
+                    {
+                        return ride.Status == RideStatus.Pending
+                            ? RedirectToAction("WaitingForDriver", "Ride", new { id = ride.Id })
+                            : RedirectToAction("RideDetails", "Ride", new { id = ride.Id });
+                    }
+                }
+            }
+
             return View();
         }
 
