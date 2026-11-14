@@ -271,9 +271,9 @@ The [ride workflow guide](docs/ride-transitions-cqrs.md#current-follow-up-work) 
 
 Originally developed by:
 
-- **Ibrahim**
-- **Amr** — credited in the Git history as `Amr-222`, `AmrAhmed22`, and `Amr`.
-- **Esraa Hussien**
+- **[Ibrahim](https://github.com/Ibrahim-357)**
+- **[Amr](https://github.com/AmrAhmed22)**
+- **[Esraa Hussien](https://github.com/esraahussie)**
 
 Thank you to everyone who contributed to the original application. See the [full contributor history](https://github.com/iTz-DESPERADO/Uber/graphs/contributors).
 
