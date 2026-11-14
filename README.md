@@ -36,7 +36,11 @@ The codebase follows Clean Architecture, with domain-owned business rules, CQRS 
 
 ## Demo
 
-https://github.com/user-attachments/assets/20323e2c-d635-4c9c-ae95-b6c9e4139aad
+[![Watch the Uber System overview](assets/demo/poster.jpg)](assets/demo/uber-system-overview.mp4)
+
+**[Watch the system overview](assets/demo/uber-system-overview.mp4)** — 56 seconds · HD 720p · Motion graphics · No audio.
+
+Explore booking, driver matching, live ride updates, wallet settlement, ratings, and the new Clean Architecture. This animated explainer illustrates the workflow and architecture; it is not a screen recording.
 
 ## Features
 
