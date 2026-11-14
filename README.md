@@ -1,207 +1,217 @@
-# 🚗 Uber System
+<div align="center">
 
-A complete ride-hailing application built with ASP.NET Core MVC, featuring real-time communication between riders and drivers using SignalR.
+<h1><img src="assets/readme-banner.svg" alt="Uber | Real-Time Ride-Hailing Platform" width="1200" /></h1>
+
+**Connecting riders and drivers through real-time trip management.**
+
+Rider and driver workflows · Live ride updates · Wallet payments · Clean Architecture
+
+[Watch the demo](#demo) · [Get started](#getting-started) · [Explore the architecture](#architecture) · [Read the docs](#documentation)
+
+</div>
 
 ---
 
-## 🎥 Demo Video
+## Overview
 
+Uber System connects riders and drivers through a complete ride workflow: request a trip, match with a nearby driver, follow its progress, settle payment, and submit ratings. The application combines an MVC and Razor interface with Minimal APIs and SignalR, backed by SQL Server.
+
+The codebase follows Clean Architecture, with domain-owned business rules, CQRS use cases, a custom mediator, and explicit persistence and integration boundaries.
+
+## Contents
+
+- [Demo](#demo)
+- [Features](#features)
+- [Technology stack](#technology-stack)
+- [Architecture](#architecture)
+- [Ride lifecycle](#ride-lifecycle)
+- [Getting started](#getting-started)
+- [Configuration](#configuration)
+- [Development accounts](#development-accounts)
+- [Testing](#testing)
+- [Data integrity](#data-integrity)
+- [Current limitations](#current-limitations)
+- [Documentation](#documentation)
+- [Developers and credits](#developers-and-credits)
+
+## Demo
 
 https://github.com/user-attachments/assets/20323e2c-d635-4c9c-ae95-b6c9e4139aad
 
+## Features
 
+| Area | Capabilities |
+| --- | --- |
+| Ride booking | Location search, pickup and destination selection, server-calculated quotes from supplied route measurements, and nearby-driver matching. |
+| Driver workflow | Accept or reject requests, report arrival, start a trip, and complete it. Rejected requests can be assigned to another driver. |
+| Real-time updates | SignalR notifications for incoming requests and ride status changes. |
+| Ride recovery | Restore the participant's active ride after navigation and reload persisted status after reconnecting. |
+| Payments | Wallet settlement on trip completion and Stripe sandbox integration for payment workflows. |
+| Ratings | Database-backed rider and driver ratings, with one rating per participant per completed ride. |
+| Identity and access | ASP.NET Core Identity, role and permission checks, and optional Google and Facebook sign-in. |
+| Consistency | Domain-enforced transitions, optimistic concurrency, and database constraints for active-driver reservations and duplicate ratings. |
 
-## 🌟 Features
+## Technology stack
 
-* **Real-time Ride Requests**: Instant notifications to drivers using SignalR
-* **Smart Driver Matching**: Automatic selection of nearest available driver based on coordinates
-* **Live Status Updates**: Real-time ride status tracking for both riders and drivers
-* **Automatic Fallback**: Seamless transition to next available driver if current driver rejects
-* **Active Ride Recovery**: Riders and drivers return to their current ride after navigation or reconnect
-* **Atomic Driver Reservation**: SQL Server guarantees that one driver cannot hold two active rides
-* **Persistent Ratings**: One database-backed rating per participant and ride
-* **Wallet and Stripe Sandbox**: Payment endpoints with wallet settlement after ride completion
-* **Comprehensive Error Handling**: User-friendly error messages and graceful degradation
+| Layer / concern | Technology |
+| --- | --- |
+| Runtime | C# / .NET 8 |
+| Web interface | ASP.NET Core MVC, Razor views, JavaScript, Bootstrap |
+| HTTP and real-time communication | Minimal APIs, SignalR |
+| Application orchestration | CQRS, custom mediator, FluentValidation, Result Pattern |
+| Data access | Entity Framework Core 9.0.7 for persistence; Dapper for query projections |
+| Database | SQL Server |
+| Authentication | ASP.NET Core Identity; optional Google and Facebook OAuth |
+| Integrations | Stripe.net, SMTP |
+| Tests | xUnit |
 
----
+## Architecture
 
-## 🔄 How It Works
+Dependencies point toward the application and domain layers. Infrastructure implements the contracts they define; the UI wires the implementations together at startup.
 
-### Ride Request Flow
-
-```
-User Requests Ride
-       ↓
-Find Nearest Available Driver
-       ↓
-Create Pending Ride in Database
-       ↓
-Send Real-time Notification to Driver (SignalR)
-       ↓
-Driver Receives Request on Dashboard
-       ↓
-    ┌──────┴──────┐
-    ↓             ↓
-  Accept       Reject
-    ↓             ↓
-Update Status   Find Next Nearest Driver
-    ↓             ↓
-Notify User   Repeat Process or Notify "No Drivers"
-```
-
-### Key Workflows
-
-**1. Ride Request**
-
-* User selects pickup and destination suggestions from the location search endpoint
-* Server calculates the quoted price from the supplied route distance and duration
-* Nearest driver is selected and notified via SignalR
-* Ride status set to `Pending`
-
-**2. Driver Response**
-
-* Driver sees incoming request in real-time
-* Can accept or reject within the dashboard
-* Response triggers immediate status update
-
-**3. Acceptance Path**
-
-* Ride status updated to `Accepted`
-* A filtered unique SQL index atomically reserves the driver for this active ride
-* User redirected to trip tracking page
-* Driver information shared with user
-
-**4. Rejection Path**
-
-* System automatically finds next nearest driver
-* New notification sent via SignalR
-* Process repeats until driver accepts or no drivers remain
-
----
-
-## 🏗️ Architecture
-
-The legacy BLL/DAL projects have been removed and the application now follows
-Clean Architecture. Domain entities and repository
-contracts are independent of EF Core and Identity. Application owns the CQRS
-use cases, custom mediator, validation pipeline and integration abstractions.
-Infrastructure owns EF models, migrations, repository implementations and external integrations.
-See the [migration plan](docs/clean-architecture-migration.md) and
-[CQRS guide](docs/cqrs.md). Ride-specific integrity rules are documented in
-[the ride workflow guide](docs/ride-transitions-cqrs.md).
-
-```
-┌─────────────────────────────────────────┐
-│  Presentation Layer (Uber.Ui)          │
-│  - Minimal APIs, MVC views, SignalR     │
-└─────────────────┬───────────────────────┘
-                  │
-┌─────────────────▼───────────────────────┐
-│  Application                            │
-│  - CQRS handlers and pipeline behaviors │
-└─────────────────┬───────────────────────┘
-                  │
-┌─────────────────▼───────────────────────┐
-│  Domain                                 │
-│  - Entities, rules, repository contracts│
-└─────────────────┬───────────────────────┘
-                  │
-┌─────────────────▼───────────────────────┐
-│  Infrastructure                        │
-│  - EF models, repositories, DbContext   │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    UI["Uber.Ui"] --> APP["Uber.Application"]
+    UI --> DOMAIN["Uber.Domain"]
+    UI --> INFRA["Uber.Infrastructure"]
+    INFRA --> APP
+    APP --> DOMAIN
 ```
 
-### Layer Responsibilities
+Arrows represent project references. The UI references Infrastructure as the composition root; Domain has no dependency on EF Core or ASP.NET Core Identity.
 
-**Uber.Ui (Presentation Layer)**
+| Project | Responsibility |
+| --- | --- |
+| `Uber.Ui` | MVC controllers, Razor views, Minimal API endpoints, SignalR hubs, authorization, exception mapping, and startup. |
+| `Uber.Application` | Commands, queries, handlers, mediator pipelines, validation, and abstractions for external services and query connections. |
+| `Uber.Domain` | Entities, ride lifecycle rules, domain services, repository contracts, Unit of Work contract, and Result types. |
+| `Uber.Infrastructure` | EF Core models and migrations, repository implementations, Identity, SQL connections, Stripe, and SMTP. |
 
-* MVC Controllers for HTTP request handling
-* Minimal API groups for application commands and queries
-* SignalR Hubs for real-time communication
-* Razor views for user interface
-* Client-side JavaScript for interactive features
+Commands and queries share one SQL database. CQRS separates their responsibilities in code; it does not introduce event sourcing or separate databases.
 
-**Uber.Application**
-
-* CQRS commands and queries handled by the custom mediator
-* FluentValidation pipeline for incoming requests
-* Application abstractions for Identity, payments and data connections
-* Result Pattern at application boundaries
-
-**Uber.Domain / Uber.Infrastructure**
-
-* Domain entities own business state and behavior
-* Repository contracts and Unit of Work live in Domain
-* EF/Identity models, implementations, DbContext and migrations live in Infrastructure
-* Repositories stage changes; the Unit of Work commits them
-* Dapper handles query-side projections through an application-owned connection factory
-* SQL row versions protect ride, wallet and rating updates from lost writes
-
----
-
-## Configuration
-
-Keep secrets outside source control and provide them through user secrets,
-environment variables, or the deployment secret store:
-
-* `ConnectionStrings__Mydatabase`
-* `Stripe__SecretKey`
-* `Smtp__Host`, `Smtp__Port`, `Smtp__UserName`, `Smtp__Password`, `Smtp__Sender`
-* `Authentication__Google__ClientId`, `Authentication__Google__ClientSecret` (optional; callback: `/signin-google`)
-* `Authentication__Facebook__AppId`, `Authentication__Facebook__AppSecret` (optional; callback: `/signin-facebook`)
-
----
-
-## 📁 Project Structure
-
-```
+```text
 Uber/
 ├── src/
-│   ├── Uber.Ui/                 # MVC, Razor, SignalR and startup
-│   ├── Uber.Domain/             # Domain contracts and Result Pattern
-│   ├── Uber.Application/        # CQRS, mediator and pipelines
-│   └── Uber.Infrastructure/     # EF, Identity, repositories and integrations
+│   ├── Uber.Ui/
+│   ├── Uber.Application/
+│   ├── Uber.Domain/
+│   └── Uber.Infrastructure/
 ├── tests/
 │   ├── Uber.Domain.Tests/
 │   ├── Uber.Application.Tests/
-│   └── Uber.Behavior.Tests/      # Existing ride transition behavior
+│   └── Uber.Behavior.Tests/
 ├── docs/
-├── assets/
-├── .gitignore
 ├── README.md
 └── Uber.sln
 ```
 
----
+## Ride lifecycle
 
-## 🚀 Getting Started
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Request ride
+    Pending --> Accepted: Driver accepts
+    Pending --> Rejected: Driver rejects
+    Rejected --> Pending: Assign next driver
+    Accepted --> DriverWaiting: Driver arrives
+    DriverWaiting --> InProgress: Start trip
+    InProgress --> Completed: Complete trip
+    Pending --> Cancelled: Cancel
+    Accepted --> Cancelled: Cancel
+    DriverWaiting --> Cancelled: Cancel
+    Completed --> [*]
+    Cancelled --> [*]
+```
+
+The server checks participant ownership before applying a transition. Completing a ride triggers payment settlement; ratings become available after completion. See the [ride workflow guide](docs/ride-transitions-cqrs.md) for matching, recovery, and concurrency details.
+
+## Getting started
 
 ### Prerequisites
 
-* .NET SDK supporting .NET 8 and the .NET 8 ASP.NET Core runtime
-* SQL Server, SQL Server Express, or LocalDB
-* Visual Studio 2022 or VS Code
-* Modern web browser with JavaScript enabled
+- A .NET SDK capable of building `net8.0` projects and the .NET 8 ASP.NET Core runtime.
+- SQL Server, SQL Server Express, or Windows LocalDB.
+- Entity Framework CLI version `9.0.7`, matching the repository's EF Core packages.
+- A browser with JavaScript enabled.
 
-Run from the repository root:
+Run the following commands from the repository root. The configuration-copy example uses PowerShell.
 
-```sh
+### 1. Restore and build
+
+```powershell
 dotnet restore Uber.sln
 dotnet build Uber.sln --no-restore
-dotnet ef database update --project src/Uber.Infrastructure/Uber.Infrastructure.csproj --startup-project src/Uber.Ui/Uber.Ui.csproj
-dotnet test Uber.sln --no-build
-dotnet run --project src/Uber.Ui/Uber.Ui.csproj
 ```
 
-Application startup requires local database and external-service settings.
-Copy `src/Uber.Ui/appsettings.example.json` to `appsettings.json` and replace
-the placeholders locally. The local file is ignored by Git. The focused unit
-and contract tests do not require a running database or external services.
+If the EF CLI is not installed:
 
-### Development accounts
+```powershell
+dotnet tool install --global dotnet-ef --version 9.0.7
+```
 
-When the application runs in `Development`, startup creates these accounts once:
+### 2. Configure the application
+
+Create the local settings file if it does not already exist:
+
+```powershell
+if (-not (Test-Path src/Uber.Ui/appsettings.json)) {
+    Copy-Item src/Uber.Ui/appsettings.example.json src/Uber.Ui/appsettings.json
+}
+```
+
+The example uses Windows LocalDB and a database named `Uber`. For another SQL Server instance, set the connection string through user secrets:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:Mydatabase" "Server=YOUR_SERVER;Database=Uber;Trusted_Connection=True;TrustServerCertificate=True" --project src/Uber.Ui
+```
+
+Configure Stripe and SMTP before exercising payment and email workflows. See [Configuration](#configuration) for the available settings. Local `appsettings.json` is ignored by Git.
+
+### 3. Apply database migrations
+
+```powershell
+dotnet ef database update --project src/Uber.Infrastructure/Uber.Infrastructure.csproj --startup-project src/Uber.Ui/Uber.Ui.csproj
+```
+
+Apply migrations before launching the application: startup initializes Identity data and, in Development, seeds demonstration accounts.
+
+### 4. Run locally
+
+```powershell
+dotnet dev-certs https --trust
+dotnet run --project src/Uber.Ui/Uber.Ui.csproj --launch-profile https
+```
+
+Open **[https://localhost:7241](https://localhost:7241)**. The `https` launch profile sets the environment to `Development` and also binds HTTP on port `5172`.
+
+## Configuration
+
+Use .NET user secrets for local credentials or environment variables in your deployment environment. Nested configuration keys use `:` in user secrets and `__` in environment variables.
+
+| Environment variable | Purpose |
+| --- | --- |
+| `ConnectionStrings__Mydatabase` | SQL Server connection string; required for database access and startup initialization. |
+| `Stripe__SecretKey` | Stripe secret key for payment operations. Sandbox mode requires a key beginning with `sk_test_`. |
+| `Stripe__UseSandbox` | Sandbox guard; defaults to `true`. The example configuration enables it. |
+| `Smtp__Host`, `Smtp__Port` | SMTP server and port; the default port is `587`. |
+| `Smtp__UserName`, `Smtp__Password`, `Smtp__Sender` | SMTP credentials and sender address for email workflows. |
+| `Smtp__EnableSsl` | Enable SSL for SMTP; defaults to `true`. |
+| `Authentication__Google__ClientId`, `Authentication__Google__ClientSecret` | Optional Google sign-in credentials; callback path: `/signin-google`. |
+| `Authentication__Facebook__AppId`, `Authentication__Facebook__AppSecret` | Optional Facebook sign-in credentials; callback path: `/signin-facebook`. |
+
+Google and Facebook authentication are registered only when both settings for the provider are populated. Register the corresponding callback URL with your provider using the application's origin.
+
+Example local Stripe configuration:
+
+```powershell
+dotnet user-secrets set "Stripe:SecretKey" "sk_test_REPLACE_WITH_YOUR_KEY" --project src/Uber.Ui
+```
+
+Keep real credentials out of tracked configuration files.
+
+## Development accounts
+
+Development startup seeds the following accounts idempotently. These are local demonstration credentials; the development seeder is not executed in other environments.
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -211,30 +221,72 @@ When the application runs in `Development`, startup creates these accounts once:
 | Driver | `driver1@uber.local` | `Driver123!` |
 | Driver | `driver2@uber.local` | `Driver123!` |
 
-The driver accounts include active Cairo locations and sample vehicles. Rider
-accounts include development wallet balances. The
-seed is idempotent and is never executed outside the Development environment.
+Driver accounts include active Cairo locations and sample vehicles. Rider accounts include development wallet balances. Use separate browser sessions for a rider and driver to explore the request and acceptance flow.
+
+## Testing
+
+After building the solution:
+
+```powershell
+dotnet test Uber.sln --no-build
+```
+
+| Test project | Focus |
+| --- | --- |
+| `Uber.Domain.Tests` | Result contracts, ride rules, and payment behavior. |
+| `Uber.Application.Tests` | Mediator dispatch and pipeline behavior. |
+| `Uber.Behavior.Tests` | Persistence model and SQL schema baseline checks. |
+
+These focused tests do not require a running SQL Server instance or external services. They do not replace a full browser and integration check of booking, SignalR, Stripe, and SMTP workflows.
 
 ## Data integrity
 
-Ride lifecycle changes are enforced by the Domain entity and protected by a
-SQL `rowversion`. A filtered unique index on `Rides.DriverId` covers the active
-statuses `Accepted`, `DriverWaiting`, and `InProgress`; concurrent accept
-requests therefore cannot reserve the same driver twice. Ratings are stored in
-`RideRatings` with a unique `(RideId, RaterId)` index. Expected business
-failures return `Result`, while the global exception handler maps concurrency
-and unique-index races to HTTP `409 Conflict`.
+- **Valid transitions:** Domain entities reject invalid ride lifecycle changes without mutating their state.
+- **Exclusive driver reservation:** A filtered unique index on `Rides.DriverId` covers `Accepted`, `DriverWaiting`, and `InProgress`, preventing concurrent accepted or ongoing rides for one driver. Pending invitations are outside this constraint.
+- **Optimistic concurrency:** SQL `rowversion` tokens protect ride and user updates, including wallet and aggregate-rating changes, from lost writes.
+- **Atomic wallet settlement:** Customer debit, driver credit, and ride completion are committed through one Unit of Work.
+- **Persistent ratings:** A unique `(RideId, RaterId)` index prevents duplicate ratings; the rating and aggregate update are saved together.
+- **Consistent error responses:** Expected business failures use Result values. The global exception handler maps concurrency and relevant unique-index races to HTTP `409 Conflict`.
+
+## Current limitations
+
+The [ride workflow guide](docs/ride-transitions-cqrs.md#current-follow-up-work) records these follow-up areas:
+
+- Route distance and duration are supplied by the client; a trusted server-side routing provider should calculate them.
+- Stale pending requests need an explicit background expiration or reassignment policy.
+- Rejection history needs persistence to prevent a ride from cycling back to a driver who already rejected it.
+
+## Documentation
+
+| Guide | What it covers |
+| --- | --- |
+| [Clean Architecture migration](docs/clean-architecture-migration.md) | Migration plan and architectural changes. |
+| [CQRS and mediator](docs/cqrs.md) | Commands, queries, handler discovery, and pipelines. |
+| [Domain boundaries](docs/domain-boundaries.md) | Domain responsibilities and persistence separation. |
+| [Result Pattern](docs/result-pattern.md) | Explicit success and failure contracts. |
+| [Ride workflow and integrity](docs/ride-transitions-cqrs.md) | Lifecycle transitions, matching, payment, ratings, and concurrency. |
+| [Behavior baseline](docs/ride-behavior-baseline.md) | Reference behavior used during the migration. |
+
+## Developers and credits
+
+Originally developed by:
+
+- **Ibrahim**
+- **Amr** — credited in the Git history as `Amr-222`, `AmrAhmed22`, and `Amr`.
+- **Esraa Hussien**
+
+Thank you to everyone who contributed to the original application. See the [full contributor history](https://github.com/iTz-DESPERADO/Uber/graphs/contributors).
+
+**Refactored by [DESPERADO](https://github.com/iTz-DESPERADO)** — Clean Architecture migration, CQRS and mediator pipelines, domain rules, and ride data integrity improvements.
 
 ---
 
-## 🙏 Acknowledgments
+<div align="center">
 
-* Built with ASP.NET Core MVC
-* Real-time communication powered by SignalR
-* Inspired by modern ride-hailing platforms
+### Enjoyed this project? Give it a star ⭐
 
----
+If you find this repository useful, consider starring it on GitHub to support the developers and help others discover it.
 
-⭐ **Star this repository if you find it helpful!**
+[**Star this repository**](https://github.com/iTz-DESPERADO/Uber)
 
-
+</div>

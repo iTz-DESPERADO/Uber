@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title description">
+  <title id="title">Uber | Real-Time Ride-Hailing Platform</title>
+  <desc id="description">A calm blue gradient with gently moving waves beneath the Uber title.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102d50"/>
+      <stop offset="0.55" stop-color="#165580"/>
+      <stop offset="1" stop-color="#217c9b"/>
+    </linearGradient>
+    <clipPath id="bounds"><rect width="1200" height="320" rx="24"/></clipPath>
+    <path id="wave" d="M0 0 Q150 -30 300 0 T600 0 T900 0 T1200 0 T1500 0 T1800 0 L1800 140 L0 140 Z"/>
+  </defs>
+  <g clip-path="url(#bounds)">
+    <rect width="1200" height="320" fill="url(#background)"/>
+    <circle cx="1090" cy="35" r="210" fill="#9bd8ee" opacity="0.035"/>
+    <circle cx="100" cy="295" r="220" fill="#9bd8ee" opacity="0.035"/>
+    <g transform="translate(0 249)" fill="#92cfe6" opacity="0.12">
+      <use href="#wave">
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="18s" repeatCount="indefinite"/>
+      </use>
+    </g>
+    <g transform="translate(0 269)" fill="#b5e3f2" opacity="0.13">
+      <use href="#wave">
+        <animateTransform attributeName="transform" type="translate" from="-600 0" to="0 0" dur="24s" repeatCount="indefinite"/>
+      </use>
+    </g>
+    <g transform="translate(0 291)" fill="#d1edf8" opacity="0.15">
+      <use href="#wave">
+        <animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="14s" repeatCount="indefinite"/>
+      </use>
+    </g>
+    <g text-anchor="middle" font-family="Segoe UI, Arial, sans-serif">
+      <text x="600" y="131" font-size="76" font-weight="700" letter-spacing="8" fill="#ffffff">UBER</text>
+      <text x="600" y="180" font-size="25" font-weight="400" letter-spacing="3" fill="#e0f1fc">REAL-TIME RIDE-HAILING PLATFORM</text>
+      <text x="600" y="217" font-size="15" letter-spacing="2" fill="#b5d6e9">CONNECTED JOURNEYS. SEAMLESS EXPERIENCES.</text>
+    </g>
+  </g>
+</svg>
